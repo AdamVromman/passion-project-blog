@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import BaseHead from "../components/BaseHead.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
-import Planning from "../components/planning.astro";
+import Planning from "../components/Planning.astro";
 
 const posts = (await getCollection("blog")).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
@@ -32,8 +32,6 @@ planning.forEach((plan) => {
     });
   }
 });
-
-console.log(content);
 ---
 
 <!doctype html>
