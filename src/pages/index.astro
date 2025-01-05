@@ -22,15 +22,12 @@ const posts = (await getCollection("blog")).sort(
     </section>
     <section>
       <div class="timeline-wrapper">
-        <div
-          style={{ width: `${posts.length * 600 + 160}px` }}
-          class="timeline"
-        >
+        <div data-posts={posts.length} class="timeline">
           <div class="axis"></div>
-          <div class="markings">
+          <div class="markings need-padding">
             {posts.map((_) => <div class="marking" />)}
           </div>
-          <ul class="post-list">
+          <ul class="post-list need-padding">
             {
               posts.map((post) => (
                 <li>
@@ -60,5 +57,20 @@ const posts = (await getCollection("blog")).sort(
         </div>
       </div>
     </section>
-  </body>
+  </body><script>
+    const width = window.innerWidth / 2 - 250;
+    const needPadding = document.getElementsByClassName(
+      "need-padding"
+    ) as HTMLCollectionOf<HTMLElement>;
+    for (let div of needPadding) {
+      div.style.marginLeft = `${width}px`;
+    }
+
+    const timeline = document.querySelector(".timeline") as HTMLElement;
+    if (timeline) {
+      const posts = (timeline.getAttribute("data-posts") ?? 1) as number;
+      console.log(posts);
+      timeline.style.width = `${posts * 500 + (posts - 1) * 100 + width * 2}px`;
+    }
+  </script>
 </html>
