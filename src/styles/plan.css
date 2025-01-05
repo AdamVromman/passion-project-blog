@@ -1,0 +1,16 @@
+.day-plan {
+  @apply w-[500px] pl-[250px];
+  li {
+    @apply relative;
+    @apply leading-loose;
+
+    &.done {
+      @apply line-through;
+    }
+
+    &:before {
+      content: "—";
+      @apply absolute -translate-x-[200%];
+    }
+  }
+}

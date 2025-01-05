@@ -1,0 +1,13 @@
+---
+import { render } from "astro:content";
+import "../styles/plan.css";
+
+interface Props {
+  post: any;
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<div class="day-plan"><Content /></div>

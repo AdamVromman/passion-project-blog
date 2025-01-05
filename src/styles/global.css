@@ -1,15 +1,140 @@
-html {
-  width: 100%;
-  height: 100%;
+@font-face {
+  font-family: "Prophet";
+  font-style: normal;
+  font-weight: 100 900;
+  src: url("/fonts/ABCDailyScotchVariableEdu-Light.woff") format("woff");
 }
+
+html {
+  @apply w-full h-full;
+  @apply flex flex-col items-center;
+  @apply px-8;
+  font-family: "Prophet", serif;
+  @apply bg-white;
+}
+
 body {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-family: "Roboto", sans-serif;
-  padding: 0;
-  margin: 0;
+  @apply max-w-screen-lg w-full h-full p-0 m-0;
+  @apply flex flex-col items-center;
+}
+
+.prose {
+  @apply max-w-screen-md mx-auto;
+
+  p {
+    @apply mb-8;
+
+    &:last-of-type {
+      @apply mb-0;
+    }
+  }
+
+  p {
+    @apply leading-loose text-justify;
+  }
+}
+
+h1 {
+  @apply text-7xl font-bold text-center;
+}
+
+.timeline-wrapper {
+  @apply w-screen overflow-x-auto;
+  @apply mb-20 pb-8;
+}
+
+.timeline {
+  @apply min-w-full w-screen;
+  @apply relative;
+
+  .line {
+    @apply relative;
+  }
+
+  .axis {
+    @apply relative top-[4.5px];
+    @apply h-[1px] bg-black w-full;
+  }
+}
+
+.hero {
+  @apply w-full max-w-full min-h-screen flex flex-col items-center justify-center gap-20;
+}
+
+.post-list,
+.markings,
+.planning {
+  @apply flex flex-row items-center gap-[100px];
+}
+
+.post-list {
+  @apply mt-10;
+}
+
+.markings {
+  @apply absolute top-0;
+  .marking {
+    @apply w-[10px] h-[10px] rounded-full bg-black mx-[245px];
+  }
+}
+
+.planning {
+  @apply mb-10;
+}
+
+.post-teaser {
+  @apply w-[500px] max-w-[500px];
+  @apply flex flex-col;
+  @apply relative;
+  @apply overflow-hidden rounded-lg;
+  @apply border border-black;
+
+  &:hover {
+    .description {
+      @apply translate-y-0;
+    }
+    .info {
+      @apply h-[150%];
+    }
+  }
+
+  .info {
+    @apply absolute w-full h-1/4;
+    @apply bg-gradient-to-b from-black to-transparent;
+    @apply p-4;
+    @apply text-white;
+    @apply flex flex-row items-start justify-between;
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .title {
+    @apply text-4xl font-bold;
+  }
+
+  .date {
+    @apply text-xl font-thin;
+  }
+
+  .image {
+    @apply w-full object-cover;
+    aspect-ratio: 16 / 7;
+  }
+
+  .description {
+    @apply absolute;
+    @apply bottom-0 w-full p-4;
+    @apply translate-y-full;
+    @apply transition-transform duration-300 ease-in-out;
+
+    p {
+      @apply text-white;
+    }
+  }
+}
+
+.post-teaser-placeholder {
+  @apply flex flex-col items-center justify-center gap-4 text-center;
+  @apply w-[500px] min-w-[500px];
+  aspect-ratio: 16 / 7;
+  @apply bg-gray-50 rounded-lg;
 }

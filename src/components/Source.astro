@@ -1,0 +1,20 @@
+---
+import "../styles/source.css";
+
+interface Props {
+  APA: string;
+  name: string;
+  link: string;
+  year: number;
+}
+
+const { APA, name, link, year } = Astro.props;
+---
+
+<span id={APA} class="source">
+  <a href={link} target="_blank" class="bg"></a>
+  <span class="apa">{APA}</span>
+  <span class="name">
+    ({name}, {year})
+  </span>
+</span>
