@@ -2,10 +2,38 @@
 import { getCollection } from "astro:content";
 import BaseHead from "../components/BaseHead.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+import Planning from "../components/planning.astro";
 
 const posts = (await getCollection("blog")).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
+
+const planning = (await getCollection("planning")).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const today = new Date().getTime();
+
+const content = new Map<number, { post: any; planning: any }>();
+
+posts.forEach((post) => {
+  if (!content.has(post.data.pubDate.valueOf())) {
+    content.set(post.data.pubDate.valueOf(), { post: post, planning: null });
+  }
+});
+
+planning.forEach((plan) => {
+  if (!content.has(plan.data.pubDate.valueOf())) {
+    content.set(plan.data.pubDate.valueOf(), { post: null, planning: plan });
+  } else {
+    content.set(plan.data.pubDate.valueOf(), {
+      post: content.get(plan.data.pubDate.valueOf())?.post,
+      planning: plan,
+    });
+  }
+});
+
+console.log(content);
 ---
 
 <!doctype html>
@@ -22,36 +50,76 @@ const posts = (await getCollection("blog")).sort(
     </section>
     <section>
       <div class="timeline-wrapper">
-        <div data-posts={posts.length} class="timeline">
-          <div class="axis"></div>
-          <div class="markings need-padding">
-            {posts.map((_) => <div class="marking" />)}
+        <div data-posts={Array.from(content.keys()).length} class="timeline">
+          <div class="planning need-padding">
+            {
+              Array.from(content.keys())
+                .sort()
+                .map((key) => {
+                  const plan = content.get(key)?.planning;
+                  if (plan) {
+                    return <Planning post={plan} />;
+                  } else {
+                    return <div class="day-plan" />;
+                  }
+                })
+            }
+          </div>
+          <div class="line">
+            <div class="axis"></div>
+            <div class="markings need-padding">
+              {
+                Array.from(content.keys())
+                  .sort()
+                  .map((_) => {
+                    return <div class="marking" />;
+                  })
+              }
+            </div>
           </div>
           <ul class="post-list need-padding">
             {
-              posts.map((post) => (
-                <li>
-                  <a class="post-teaser" href={`/${post.id}/`}>
-                    <div class="info">
-                      <h4 class="title">{post.data.title}</h4>{" "}
-                      <p class="date">
-                        {new Intl.DateTimeFormat("nl-be", {
-                          dateStyle: "full",
-                        }).format(post.data.pubDate)}
-                      </p>
-                    </div>
-                    <img
-                      class="image"
-                      src={`/headers/${post.data.heroImage}`}
-                      alt={post.data.title}
-                    />
+              Array.from(content.keys())
+                .sort()
+                .map((key, index) => {
+                  const post = content.get(key)?.post;
 
-                    <div class="description">
-                      <p>{post.data.description}</p>
-                    </div>
-                  </a>
-                </li>
-              ))
+                  if (post) {
+                    return (
+                      <li>
+                        <a class="post-teaser" href={`/${post.id}/`}>
+                          <div class="info">
+                            <h4 class="title">{post.data.title}</h4>{" "}
+                            <p class="date">
+                              {new Intl.DateTimeFormat("en", {
+                                dateStyle: "medium",
+                              }).format(post.data.pubDate)}
+                            </p>
+                          </div>
+                          <img
+                            class="image"
+                            src={`/headers/${post.data.heroImage}`}
+                            alt={post.data.title}
+                          />
+
+                          <div class="description">
+                            <p>{post.data.description}</p>
+                          </div>
+                        </a>
+                      </li>
+                    );
+                  } else {
+                    const date =
+                      new Date("2025-1-5").getTime() +
+                      index * 24 * 60 * 60 * 1000;
+
+                    return (
+                      <li class="post-teaser-placeholder">
+                        {today > date ? "No post today" : "No post yet"}
+                      </li>
+                    );
+                  }
+                })
             }
           </ul>
         </div>
@@ -69,9 +137,8 @@ const posts = (await getCollection("blog")).sort(
 
       const timeline = document.querySelector(".timeline") as HTMLElement;
       if (timeline) {
-        const posts = (timeline.getAttribute("data-posts") ?? 1) as number;
-        console.log(posts);
-        timeline.style.width = `${posts * 500 + (posts - 1) * 100 + width * 2}px`;
+        const days = (timeline.getAttribute("data-posts") ?? 1) as number;
+        timeline.style.width = `${days * 500 + (days - 1) * 100 + width * 2}px`;
       }
     };
     setupTimeline();

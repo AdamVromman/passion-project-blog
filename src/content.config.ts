@@ -11,4 +11,11 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { blog };
+const planning = defineCollection({
+  loader: glob({ base: "./src/content/planning", pattern: "**/*.{md,mdx}" }),
+  schema: z.object({
+    pubDate: z.coerce.date(),
+  }),
+});
+
+export const collections = { blog, planning };

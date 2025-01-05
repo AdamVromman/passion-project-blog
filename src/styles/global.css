@@ -22,6 +22,14 @@ body {
   @apply max-w-screen-md mx-auto;
 
   p {
+    @apply mb-8;
+
+    &:last-of-type {
+      @apply mb-0;
+    }
+  }
+
+  p {
     @apply leading-loose text-justify;
   }
 }
@@ -32,12 +40,16 @@ h1 {
 
 .timeline-wrapper {
   @apply w-screen overflow-x-auto;
-  @apply mb-20;
+  @apply mb-20 pb-8;
 }
 
 .timeline {
   @apply min-w-full w-screen;
   @apply relative;
+
+  .line {
+    @apply relative;
+  }
 
   .axis {
     @apply relative top-[4.5px];
@@ -64,6 +76,10 @@ h1 {
   .marking {
     @apply w-[10px] h-[10px] rounded-full bg-black mx-[245px];
   }
+}
+
+.planning {
+  @apply mb-10;
 }
 
 .post-teaser {
@@ -114,4 +130,11 @@ h1 {
       @apply text-white;
     }
   }
+}
+
+.post-teaser-placeholder {
+  @apply flex flex-col items-center justify-center gap-4 text-center;
+  @apply w-[500px] min-w-[500px];
+  aspect-ratio: 16 / 7;
+  @apply bg-gray-50 rounded-lg;
 }
