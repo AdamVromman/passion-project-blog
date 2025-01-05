@@ -14,25 +14,51 @@ const posts = (await getCollection("blog")).sort(
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
   </head>
   <body>
+    <section class="hero">
+      <h1 class="w-fit mx-auto">{SITE_TITLE}</h1>
+      <div class="prose">
+        <p>{SITE_DESCRIPTION}</p>
+      </div>
+    </section>
     <section>
-      <ul>
-        {
-          posts.map((post) => (
-            <li>
-              <a href={`/${post.id}/`}>
-                <img
-                  width={720}
-                  height={360}
-                  src={post.data.heroImage}
-                  alt=""
-                />
-                <h4 class="title">{post.data.title}</h4>
-                <p class="date">{post.data.pubDate}</p>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
+      <div class="timeline-wrapper">
+        <div
+          style={{ width: `${posts.length * 600 + 160}px` }}
+          class="timeline"
+        >
+          <div class="axis"></div>
+          <div class="markings">
+            {posts.map((_) => <div class="marking" />)}
+          </div>
+          <ul class="post-list">
+            {
+              posts.map((post) => (
+                <li>
+                  <a class="post-teaser" href={`/${post.id}/`}>
+                    <div class="info">
+                      <h4 class="title">{post.data.title}</h4>{" "}
+                      <p class="date">
+                        {new Intl.DateTimeFormat("nl-be", {
+                          dateStyle: "full",
+                        }).format(post.data.pubDate)}
+                      </p>
+                    </div>
+                    <img
+                      class="image"
+                      src={`/headers/${post.data.heroImage}`}
+                      alt={post.data.title}
+                    />
+
+                    <div class="description">
+                      <p>{post.data.description}</p>
+                    </div>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
     </section>
   </body>
 </html>
