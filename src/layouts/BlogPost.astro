@@ -19,7 +19,11 @@ const { title, description, pubDate, heroImage } = Astro.props;
       <article class="blog-post">
         {
           heroImage && (
-            <img class="hero-image" src={`/headers/${heroImage}`} alt="" />
+            <img
+              class="hero-image"
+              src={`/passion-project-blog/headers/${heroImage}`}
+              alt=""
+            />
           )
         }
         <div class="prose">
