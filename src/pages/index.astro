@@ -1,7 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import BaseHead from "../components/BaseHead.astro";
-import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+import { SITE_TITLE, SITE_DESCRIPTION, BASE } from "../consts";
 import Planning from "../components/Planning.astro";
 
 const posts = (await getCollection("blog")).sort(
@@ -85,7 +85,7 @@ planning.forEach((plan) => {
                   if (post) {
                     return (
                       <li>
-                        <a class="post-teaser" href={`/${post.id}/`}>
+                        <a class="post-teaser" href={`${BASE}/${post.id}/`}>
                           <div class="info">
                             <h4 class="title">{post.data.title}</h4>{" "}
                             <p class="date">
@@ -96,7 +96,7 @@ planning.forEach((plan) => {
                           </div>
                           <img
                             class="image"
-                            src={`/passion-project-blog/headers/${post.data.heroImage}`}
+                            src={`${BASE}/headers/${post.data.heroImage}`}
                             alt={post.data.title}
                           />
 
