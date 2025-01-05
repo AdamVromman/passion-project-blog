@@ -2,7 +2,8 @@
   font-family: "Prophet";
   font-style: normal;
   font-weight: 100 900;
-  src: url("/fonts/ABCDailyScotchVariableEdu-Light.woff") format("woff");
+  src: url("/passion-project-blog/fonts/ABCDailyScotchVariableEdu-Light.woff")
+    format("woff");
 }
 
 html {
