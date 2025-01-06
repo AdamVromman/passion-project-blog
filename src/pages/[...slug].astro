@@ -5,17 +5,36 @@ import { render } from "astro:content";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
-  return posts.map((post) => ({
-    params: { slug: post.id },
-    props: post,
+  return posts.map((post, index) => ({
+    params: {
+      slug: post.id,
+    },
+    props: {
+      post: post,
+      nextPost: index + 1 <= posts.length - 1 ? posts[index + 1].id : undefined,
+      previousPost: index - 1 >= 0 ? posts[index - 1].id : undefined,
+    },
   }));
 }
-type Props = CollectionEntry<"blog">;
+type Post = CollectionEntry<"blog">;
 
-const post = Astro.props;
+interface Props {
+  post: Post;
+  nextPost: string | undefined;
+  previousPost: string | undefined;
+}
+
+const { post, nextPost, previousPost } = Astro.props;
 const { Content } = await render(post);
 ---
 
-<BlogPost {...post.data}>
+<BlogPost
+  title={post.data.title}
+  description={post.data.description}
+  pubDate={post.data.pubDate}
+  heroImage={post.data.heroImage}
+  nextPost={nextPost}
+  previousPost={previousPost}
+>
   <Content />
 </BlogPost>

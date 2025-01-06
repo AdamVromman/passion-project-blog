@@ -7,7 +7,7 @@
 }
 
 html {
-  @apply w-full h-full;
+  @apply w-full h-full overflow-x-hidden;
   @apply flex flex-col items-center;
   @apply px-8;
   font-family: "Prophet", serif;
@@ -22,21 +22,70 @@ body {
 .prose {
   @apply max-w-screen-md mx-auto;
 
-  p {
+  & > * {
     @apply mb-8;
+  }
 
-    &:last-of-type {
+  p:has(img),
+  div:has(img) {
+    p {
       @apply mb-0;
+    }
+    @apply mb-2;
+  }
+
+  img {
+    @apply rounded-md;
+  }
+
+  a {
+    @apply font-bold text-red;
+  }
+
+  h2 {
+    @apply font-bold text-3xl;
+  }
+
+  h3 {
+    @apply font-bold text-2xl;
+  }
+
+  p,
+  li {
+    @apply leading-loose text-justify;
+  }
+
+  ul {
+    @apply list-disc pl-6;
+  }
+
+  ol {
+    @apply list-decimal pl-10;
+  }
+
+  .title {
+    @apply flex flex-col items-center gap-4;
+    @apply mb-16;
+
+    hr {
+      @apply w-full;
     }
   }
 
-  p {
-    @apply leading-loose text-justify;
+  .astro-code {
+    @apply rounded-lg;
+    @apply text-sm;
+    @apply p-8;
+  }
+
+  &:last-child {
+    @apply mb-0;
   }
 }
 
 h1 {
-  @apply text-7xl font-bold text-center;
+  @apply text-7xl font-bold text-center text-green;
+  @apply leading-tight;
 }
 
 .timeline-wrapper {
@@ -59,7 +108,7 @@ h1 {
 }
 
 .hero {
-  @apply w-full max-w-full min-h-screen flex flex-col items-center justify-center gap-20;
+  @apply w-full max-w-full my-20 flex flex-col items-center justify-center gap-20;
 }
 
 .post-list,
@@ -80,7 +129,7 @@ h1 {
 }
 
 .planning {
-  @apply mb-10;
+  @apply mb-10 items-end;
 }
 
 .post-teaser {
@@ -100,7 +149,7 @@ h1 {
   }
 
   .info {
-    @apply absolute w-full h-1/4;
+    @apply absolute w-full h-1/3;
     @apply bg-gradient-to-b from-black to-transparent;
     @apply p-4;
     @apply text-white;
@@ -110,6 +159,7 @@ h1 {
 
   .title {
     @apply text-4xl font-bold;
+    @apply max-w-[66%];
   }
 
   .date {
@@ -138,4 +188,5 @@ h1 {
   @apply w-[500px] min-w-[500px];
   aspect-ratio: 16 / 7;
   @apply bg-gray-50 rounded-lg;
+  @apply text-2xl font-bold;
 }

@@ -1,12 +1,19 @@
 ---
-import type { CollectionEntry } from "astro:content";
 import BaseHead from "../components/BaseHead.astro";
 import "../styles/blogpost.css";
 import { BASE } from "../consts";
 
-type Props = CollectionEntry<"blog">["data"];
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  heroImage: string;
+  nextPost: string | undefined;
+  previousPost: string | undefined;
+}
 
-const { title, description, pubDate, heroImage } = Astro.props;
+const { title, description, pubDate, heroImage, nextPost, previousPost } =
+  Astro.props;
 ---
 
 <html lang="en">
@@ -15,9 +22,29 @@ const { title, description, pubDate, heroImage } = Astro.props;
   </head>
 
   <body>
-    <a href={`${BASE}/`} class="back">← Back</a>
     <main>
       <article class="blog-post">
+        <a class="button back-button" href={`${BASE}/`} class="back">Home</a>
+        <div class="navigation-buttons">
+          {
+            previousPost && (
+              <a
+                class="button previous-button"
+                href={`${BASE}/${previousPost}`}
+              >
+                Previous post
+              </a>
+            )
+          }
+          {
+            nextPost && (
+              <a class="button next-button" href={`${BASE}/${nextPost}`}>
+                Next post
+              </a>
+            )
+          }
+        </div>
+
         {
           heroImage && (
             <img
@@ -37,6 +64,7 @@ const { title, description, pubDate, heroImage } = Astro.props;
               }
             </div>
             <h1>{title}</h1>
+            <p class="italic text-sm">"{description}"</p>
             <hr />
           </div>
           <slot />
@@ -66,8 +94,16 @@ const { title, description, pubDate, heroImage } = Astro.props;
         if (selectedSource) {
           const apa = selectedSource.children[1];
           gsap.to(apa, {
-            x: e.clientX - selectedSource.getBoundingClientRect().left + 40,
-            y: e.clientY - selectedSource.getBoundingClientRect().top - 20,
+            x: Math.min(
+              e.clientX -
+                selectedSource.getBoundingClientRect().left -
+                apa.getBoundingClientRect().width / 2,
+              window.innerWidth -
+                selectedSource.getBoundingClientRect().left -
+                apa.getBoundingClientRect().width -
+                30
+            ),
+            y: e.clientY - selectedSource.getBoundingClientRect().top + 20,
             duration: 0.5,
             overwrite: "auto",
           });
