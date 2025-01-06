@@ -94,8 +94,16 @@ const { title, description, pubDate, heroImage, nextPost, previousPost } =
         if (selectedSource) {
           const apa = selectedSource.children[1];
           gsap.to(apa, {
-            x: e.clientX - selectedSource.getBoundingClientRect().left + 40,
-            y: e.clientY - selectedSource.getBoundingClientRect().top - 20,
+            x: Math.min(
+              e.clientX -
+                selectedSource.getBoundingClientRect().left -
+                apa.getBoundingClientRect().width / 2,
+              window.innerWidth -
+                selectedSource.getBoundingClientRect().left -
+                apa.getBoundingClientRect().width -
+                30
+            ),
+            y: e.clientY - selectedSource.getBoundingClientRect().top + 20,
             duration: 0.5,
             overwrite: "auto",
           });

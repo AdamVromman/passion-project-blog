@@ -19,13 +19,50 @@ Here is the list of the things that I want to do today:
 
 I had already set up a default *Astro* blog a few weeks ago, but today I want to implement some things that would make the blog a bit more interesting and my life a bit easier.
 
-Recently I have setup my **Astro** projects in similar ways, by adding **Typescript**, *React* and *Tailwind*. This time around, I am doing the same, although I am not using *React*, since this blog is purely static and making it client-side rendered is not necessary.
+Recently I have setup my **Astro** projects in similar ways, by adding **Typescript**, **React** and **Tailwind**. This time around, I am doing the same, although I am not using *React*, since this blog is purely static and making it client-side rendered is not necessary.
 
 I had this idea of adding a component to easily add my sources to the blog. I start out by defining a `<Source />` component that takes a `year`, `link`, `APA` and `name` prop. It shows the name and year formatted like this `name (year)`. The `APA` prop is a string that is the APA citation of the source. The `link` prop is a string that is the link to the source.
 I checked if it was possible to generate the APA style with javascript, and I am sure there is some type of library for it, but I can't be bothered right now and I'll just do it manually.
 
-To finish up this Source component, I am adding a small script to the 
+To finish up this Source component, I am adding a small script to the `<body />` that makes the APA reference visible whenever you hover over the source. 
 
-Test <Source year={2009} link='https://d1wqtxts1xzle7.cloudfront.net/36773510/THE_GAZA_WAR_strategic_analysis-libre.pdf?1424900142=&response-content-disposition=inline%3B+filename%3DThe_Gaza_War_Strategic_Analysis_2008_200.pdf&Expires=1736075258&Signature=E9sg3JauNhoIrRN-3tSH1fRHeuBlvEohCU3YX2dOxKwO7tIzhFSCxNDKuhC0jDIFWuBDauSEZUU6cn2QSlcGh-Mp0DGqYRk1dY2qvyo4lCge1BrJNQujoEP0w~LiRmYEXWckpg01imBeOrCcsOdWIYB~xed04dNW1eAbA9FqDFhT-eA1jTjbz4pD2q-E8gE23Xs4VbPqOY1Vzk3CbRAeHLb2DXHEz83ti4koFHAeFgKauGh-SaYEstkZ4L730RKNTYIzfl-pNGhSZL8RSt-Yd69OLIfV31-YAu2YIHTT8yB-QHCRj~FNu4x2s-G98WNjUahxy61KYGeexQZSrFW4tQ__&Key-Pair-Id=APKAJLOHF5GGSLRBV4ZA' APA='Cordesman, A.H., & Burke, A.A. (2009). THE "GAZA WAR": A Strategic Analysis.' name='Cordesman' /> component
+```tsx
+    import { gsap } from "gsap";
 
+    const sources = document.getElementsByClassName("source");
+
+    let selectedSource: Element | null = null;
+
+    for (const source of sources) {
+    source.addEventListener("mouseenter", () => {
+        source.classList.add("hover");
+        selectedSource = source;
+    });
+
+    source.addEventListener("mouseleave", () => {
+        source.classList.remove("hover");
+        selectedSource = null;
+    });
+    }
+
+    window.addEventListener("mousemove", (e) => {
+    if (selectedSource) {
+        const apa = selectedSource.children[1];
+        gsap.to(apa, {
+        x: e.clientX - selectedSource.getBoundingClientRect().left + 40,
+        y: e.clientY - selectedSource.getBoundingClientRect().top - 20,
+        duration: 0.5,
+        overwrite: "auto",
+        });
+    }
+    });
 ```
+
+The result looks as followed: <Source year={2024} link='https://doi.org/10.20396/conce.v13i00.8678230' APA='Rosa, P. (2024). Archiving social movement(s). Conceição|Conception, 13, e024013. https://doi.org/10.20396/conce.v13i00.8678230' name='Rosa' /> (hover over it to see the APA reference.)
+ 
+
+With that done, I can move on to visualising my posts. I want to do it as a sort of timeline where you can see the days that I worked and simultaneously see what I had planned to do by this day. I am going to implement this by having a second source of what *Astro* calls **content**.
+
+Basically, I can just make *Markdown* files in a *Planning* folder, list what I want to do by a certain date, and my code will neatly display both these plans and the actual posts in a nice side-scrolling timeline.
+
+It's getting quite late, so I am going to make a plan for *just* tomorrow and finish up for today. Then tomorrow, I can make the actual plan for the whole project.

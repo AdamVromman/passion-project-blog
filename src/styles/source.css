@@ -15,11 +15,12 @@
   }
 
   .apa {
-    @apply absolute opacity-0;
-    @apply w-max;
-    @apply bg-red-500;
+    @apply absolute z-30 opacity-0;
+    @apply w-max max-w-[1000px];
+    @apply bg-red;
     @apply px-4 py-2 rounded-full;
     @apply transition-opacity duration-300;
+    @apply text-sm text-white;
   }
 
   .name {
