@@ -9,13 +9,12 @@
 html {
   @apply w-full h-full overflow-x-hidden;
   @apply flex flex-col items-center;
-  @apply px-8;
   font-family: "Prophet", serif;
   @apply bg-white;
 }
 
 body {
-  @apply max-w-screen-lg w-full h-full p-0 m-0;
+  @apply w-full h-full p-0 m-0;
   @apply flex flex-col items-center;
 }
 
@@ -89,12 +88,12 @@ h1 {
 }
 
 .timeline-wrapper {
-  @apply w-screen overflow-x-auto;
-  @apply mb-20 pb-8;
+  @apply w-full max-w-full h-screen overflow-hidden;
+  @apply flex flex-col justify-center;
 }
 
 .timeline {
-  @apply min-w-full w-screen;
+  @apply min-w-full w-full;
   @apply relative;
 
   .line {
