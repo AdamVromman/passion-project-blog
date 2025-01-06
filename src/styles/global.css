@@ -33,6 +33,15 @@ body {
   p {
     @apply leading-loose text-justify;
   }
+
+  .title {
+    @apply flex flex-col items-center gap-4;
+    @apply mb-16;
+
+    hr {
+      @apply w-full;
+    }
+  }
 }
 
 h1 {
