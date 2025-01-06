@@ -12,8 +12,6 @@ const planning = (await getCollection("planning")).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 
-const today = new Date().getTime();
-
 const content = new Map<number, { post: any; planning: any }>();
 
 posts.forEach((post) => {
@@ -79,7 +77,7 @@ planning.forEach((plan) => {
             {
               Array.from(content.keys())
                 .sort()
-                .map((key, index) => {
+                .map((key) => {
                   const post = content.get(key)?.post;
 
                   if (post) {
@@ -107,13 +105,11 @@ planning.forEach((plan) => {
                       </li>
                     );
                   } else {
-                    const date =
-                      new Date("2025-1-5").getTime() +
-                      index * 24 * 60 * 60 * 1000;
-
                     return (
                       <li class="post-teaser-placeholder">
-                        {today > date ? "No post today" : "No post yet"}
+                        {new Intl.DateTimeFormat("en", {
+                          dateStyle: "medium",
+                        }).format(key)}
                       </li>
                     );
                   }
