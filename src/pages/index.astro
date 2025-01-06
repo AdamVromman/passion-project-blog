@@ -120,22 +120,53 @@ planning.forEach((plan) => {
       </div>
     </section>
   </body><script>
-    const setupTimeline = () => {
-      const width = window.innerWidth / 2 - 250;
-      const needPadding = document.getElementsByClassName(
-        "need-padding"
-      ) as HTMLCollectionOf<HTMLElement>;
-      for (let div of needPadding) {
-        div.style.marginLeft = `${width}px`;
-      }
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-      const timeline = document.querySelector(".timeline") as HTMLElement;
+    const width = window.innerWidth / 2 - 250;
+    const needPadding = document.getElementsByClassName(
+      "need-padding"
+    ) as HTMLCollectionOf<HTMLElement>;
+    for (let div of needPadding) {
+      div.style.marginLeft = `${width}px`;
+    }
+
+    const timeline = document.querySelector(".timeline") as HTMLElement;
+
+    const setupTimeline = () => {
       if (timeline) {
         const days = (timeline.getAttribute("data-posts") ?? 1) as number;
         timeline.style.width = `${days * 500 + (days - 1) * 100 + width * 2}px`;
       }
     };
     setupTimeline();
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    let GSAPtimeline = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".timeline-wrapper",
+        start: "top top",
+        end: "+=6000px",
+        scrub: 1,
+        pin: true,
+      },
+    });
+
+    if (timeline) {
+      GSAPtimeline.to(".timeline", {
+        x: -1 * (timeline.getBoundingClientRect().width - window.innerWidth),
+        duration: 1,
+        ease: "power2.out",
+      });
+    } else {
+      GSAPtimeline.to(".timeline", {
+        x: "-100%",
+        duration: 1,
+        ease: "power2.out",
+      });
+    }
+
     window.addEventListener("resize", setupTimeline);
   </script>
 </html>

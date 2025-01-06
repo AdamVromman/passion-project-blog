@@ -88,7 +88,7 @@ h1 {
 }
 
 .timeline-wrapper {
-  @apply w-full max-w-full h-screen overflow-x-auto;
+  @apply w-full max-w-full h-screen overflow-hidden;
   @apply flex flex-col justify-center;
 }
 
