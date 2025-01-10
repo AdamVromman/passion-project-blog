@@ -1,0 +1,32 @@
+---
+import "../styles/demo.css";
+
+interface Props {
+  type: "D3" | "GSAP";
+  title: string;
+}
+
+const { type, title } = Astro.props;
+
+const titleTransformed = title.toLowerCase().replace(/\s/g, "-");
+---
+
+<div class="demo">
+  <button class="demo-button" id={`title-${titleTransformed}`}
+    ><h4 class="title">{title} ({type})</h4><span class="arrow">↓</span></button
+  >
+  <div id={`content-${titleTransformed}`} class="content">
+    <slot />
+  </div>
+
+  <script define:vars={{ titleTransformed }}>
+    const title = document.getElementById(`title-${titleTransformed}`);
+    const content = document.getElementById(`content-${titleTransformed}`);
+
+    if (title && content) {
+      title.addEventListener("click", () => {
+        title.classList.toggle("hidden");
+      });
+    }
+  </script>
+</div>

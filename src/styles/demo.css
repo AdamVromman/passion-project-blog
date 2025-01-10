@@ -1,0 +1,28 @@
+.demo {
+  @apply bg-gray-100;
+  @apply p-4 rounded-lg;
+
+  .title {
+    @apply font-bold text-green text-2xl mb-0;
+  }
+
+  &:has(.demo-button.hidden) {
+    .content {
+      display: none;
+    }
+
+    .arrow {
+      transform: rotate(0deg);
+    }
+  }
+
+  .arrow {
+    @apply font-black text-2xl;
+    @apply rotate-180;
+    @apply transition-transform duration-300;
+  }
+
+  .demo-button {
+    @apply w-full flex flex-row items-center justify-between;
+  }
+}
