@@ -7,6 +7,8 @@ heroImage: "d3-js.png"
 
 import Demo from '../../components/Demo.astro';
 import Demo1 from '../../components/D3/Demo1.astro';
+import Demo2 from '../../components/D3/Demo2.astro';
+import Demo3 from '../../components/D3/Demo3.astro';
 
 Today, I'm taking my first steps into actual research. The place where I want to start is **D3.js**. It's used for data visualisation more than for animation, but I think it's a good place to start because of that. I hope to get familiar with what basic data visualisation in code looks like, to then be able to move on the animating it with the other frameworks.
 The idea is that I am going to make some demo's right here on the blog and see how each framework works and what they excel at or not.
@@ -16,4 +18,243 @@ I am going to start with the [get started](https://d3js.org/getting-started) of 
 <Demo title="Get started with D3" type='D3'>
 <Demo1 />
 </Demo>
+
+Right now, the code looks like this:
+
+```typescript
+  import * as d3 from "d3";
+
+  // Declare the chart dimensions and margins.
+  const width = 640;
+  const height = 400;
+  const marginTop = 20;
+  const marginRight = 20;
+  const marginBottom = 30;
+  const marginLeft = 40;
+
+  // Declare the x (horizontal position) scale.
+  const x = d3
+    .scaleUtc()
+    .domain([new Date("2023-01-01"), new Date("2024-01-01")])
+    .range([marginLeft, width - marginRight]);
+
+  // Declare the y (vertical position) scale.
+  const y = d3
+    .scaleLinear()
+    .domain([0, 100])
+    .range([height - marginBottom, marginTop]);
+
+  // Create the SVG container.
+  const svg = d3.create("svg").attr("width", width).attr("height", height);
+
+  // Add the x-axis.
+  svg
+    .append("g")
+    .attr("transform", `translate(0,${height - marginBottom})`)
+    .call(d3.axisBottom(x));
+
+  // Add the y-axis.
+  svg
+    .append("g")
+    .attr("transform", `translate(${marginLeft},0)`)
+    .call(d3.axisLeft(y));
+
+  // Append the SVG element.
+  const container = document.getElementById("container");
+  const svgNode = svg.node();
+  if (container && svgNode) container.append(svgNode);
+```
+
+Okay, the *get started* does not contain much more than that, but I can already derive some things from this code snippet.
+They seem to first declare the X-axis as a time-based one with `d3.scaleUtc()`, giving a `domain` and a `range` to it. Then they do the same with the Y-axis, but that one is linear (`d3.scaleRange()`) with a range from `0` to `100`.
+Let's check out what happens when I play around with these values.
+
+<Demo title="Playing around with the basic values" type='D3'>
+<Demo2 />
+</Demo>
+
+The code for this demo looks like this:
+
+```typescript
+import * as d3 from "d3";
+
+  const container2 = document.getElementById("container-2");
+
+  if (container2) {
+    const width = 640;
+    const height = 400;
+    const marginTop = 20;
+    const marginRight = 20;
+    const marginBottom = 30;
+    const marginLeft = 40;
+
+    // ------------------ CHART 1 ------------------
+
+    // Instead of months, we're using days.
+    const x = d3
+      .scaleUtc()
+      .domain([new Date("2023-01-01"), new Date("2023-02-01")])
+      .range([marginLeft, width - marginRight]);
+
+    // Instead of whole values, I am using a range from 0 to 1.
+    const y = d3
+      .scaleLinear()
+      .domain([0, 1])
+      .range([height - marginBottom, marginTop]);
+
+    const svg = d3.create("svg").attr("width", width).attr("height", height);
+
+    svg
+      .append("g")
+      .attr("transform", `translate(0,${height - marginBottom})`)
+      .call(d3.axisBottom(x));
+
+    svg
+      .append("g")
+      .attr("transform", `translate(${marginLeft},0)`)
+      .call(d3.axisLeft(y));
+
+    const svgNode = svg.node();
+    if (svgNode) container2.append(svgNode);
+
+    // ------------------ CHART 2 ------------------
+
+    // Instead of days, we're using a single day.
+    const x2 = d3
+      .scaleUtc()
+      .domain([new Date(2025, 1, 1), new Date(2025, 1, 2)])
+      .range([marginLeft, width / 2]);
+
+    // Instead of a range from 0 to 1, we're using a range from 0 to 0.001.
+    const y2 = d3
+      .scaleLinear()
+      .domain([0, 0.001])
+      .range([height - marginBottom, marginTop]);
+
+    const svg2 = d3.create("svg").attr("width", width).attr("height", height);
+
+    svg2
+      .append("g")
+      .attr("transform", `translate(0,${height - marginBottom})`)
+      .call(d3.axisBottom(x2));
+
+    svg2
+      .append("g")
+      .attr("transform", `translate(${marginLeft},0)`)
+      .call(d3.axisLeft(y2));
+
+    const svg2Node = svg2.node();
+    if (svg2Node) container2.append(svg2Node);
+
+    // ------------------ CHART 3 ------------------
+
+    // Instead of a single day, we're using a single minute.
+    const x3 = d3
+      .scaleUtc()
+      .domain([new Date(2025, 1, 1, 10), new Date(2025, 1, 2, 10, 1)])
+      .range([marginLeft, width - marginRight]);
+
+    // Instead of a range from 0 to 0.001, we're using a range from -20000 to 0.001.
+    const y3 = d3
+      .scaleLinear()
+      .domain([-20000, 0.001])
+      .range([height - marginBottom, height / 3]);
+
+    const svg3 = d3.create("svg").attr("width", width).attr("height", height);
+
+    svg3
+      .append("g")
+      .attr("transform", `translate(0,${height - marginBottom})`)
+      .call(d3.axisBottom(x3));
+
+    svg3
+      .append("g")
+      .attr("transform", `translate(${marginLeft},0)`)
+      .call(d3.axisLeft(y3));
+
+    const svg3Node = svg3.node();
+    if (svg3Node) container2.append(svg3Node);
+  }
+```
+
+Some things I found out:
+
+- I can add multiple svg charts to one single container.
+- For now, the width and height of both the chart itself and of the axis are fixed values. I hope that in future tutorials I can make these dynamic.
+- It also seems that D3 is choosing to put 10 markers on each axis, regardless of how big the difference is between the upper and lower value.
+
+Let's try to get some values on these charts. ([this](https://www.youtube.com/watch?v=CCBTX2pI2fU) is the tutorial I am following)
+
+Something I am understanding about D3 is that it is first and foremost a library for using data to manipulate the DOM. This is slightly different from what I imagined and it makes me more interested to use this for my project. I am imagining creating a DOM based on data and then manipulating that DOM with a different library.
+
+![Screenshot of a tutorial video on D3](/passion-project-blog/D3-stands-for-day-3/video-screenshot-1.png)
+
+They are saying that D3 is really good for animation and interaction!
+
+The last thing that I am going to do today is first implement the example that shown in the tutorial and then try and expand on it myself.
+
+<Demo title="Tutorial video demo + expanding on it" type='D3'>
+<Demo3 />
+</Demo>
+
+The code for this demo looks like this:
+
+```typescript
+  import * as d3 from "d3";
+
+  // Define a set of data.
+  const data = [1, 2, 3];
+
+  // Select all the paragraphs in the first container and simply turn them red.
+  d3.select("#container-3").selectAll("p").style("color", "red");
+
+  // Select all the paragraphs in the second container and turn them red if the data is 2, otherwise blue.
+  d3.select("#container-4")
+    .selectAll("p")
+    .data(data)
+    .style("color", (d) => (d === 2 ? "red" : "blue"));
+
+  // Select all the paragraphs in the third container and update the text to be the underlying data squared.
+  d3.select("#container-5")
+    .selectAll("p")
+    .data(data)
+    .text((d) => `Paragraph ${d * d}`);
+
+  let mutableData = [1, 1, 1];
+
+  // Change the text and color of the paragraphs in the fourth container based on the input values.
+
+  d3.select("#container-6")
+    .selectAll("p")
+    .data(mutableData)
+    .text((d) => `Paragraph ${d}`)
+    .style(
+      "color",
+      (d, index) =>
+        `#${index * index * index}${index * index * index}${d}${d}66`
+    );
+
+  const inputs = document.querySelectorAll("#container-6 input");
+
+  for (let i = 0; i < inputs.length; i++) {
+    inputs[i].addEventListener("input", (e) => {
+      if (e && e.currentTarget && e.currentTarget.value)
+        mutableData[i] = e.currentTarget.value;
+
+      d3.select("#container-6")
+        .selectAll("p")
+        .data(mutableData)
+        .text((d) => `Paragraph ${d}`)
+        .style(
+          "color",
+          (d, index) =>
+            `#${index * index * index}${index * index * index}${d}${d}66`
+        );
+    });
+  }
+```
+
+Here is start out with the original exercise which was just to turn the text red with the help of *D3* and took it one step further. For my research, I need to know how each framework deals with mutating and dynamic data. To test this, I create three `<input type="range" />`. When one of the values changes, it updates the value in my `mutableData` array. One thing I am certainly doing wrong for now is manually updating D3. I am guessing later on I should be able to create a sort of listener that makes sure things get updated if the data gets updated.
+
+That's it for today, but I am really excited to find out more about *D3*. It's definitely not what I expected it to be, and I feel like there is a lot of potential still to discover!
 
