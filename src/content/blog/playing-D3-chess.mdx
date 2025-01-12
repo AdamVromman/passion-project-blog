@@ -8,6 +8,7 @@ heroImage: "d3-chess.png"
 import Demo from '../../components/Demo.astro';
 import Demo4 from '../../components/D3/Demo4.astro';
 import Demo5 from '../../components/D3/Demo5.astro';
+import DynamicTest from '../../components/DynamicTest';
 
 Last time I finished the first tutorial and learned a lot about the basics of D3.js. For now, I am just going to continue with the second part of this tutorial and see how it progresses. The second part can be found [here](https://www.youtube.com/watch?v=Crp8UX-eQB0).
 
@@ -220,4 +221,17 @@ This part of the tutorial just talked about SVG's and `<g>`-tags. I feel quite f
 
 Now that I feel like I have a basic understanding of how D3 works, I want to focus on interactivity and see how it can be used in that regard.
 
+---
+
+I did a quick migrate to Vercel because I wanted to be able to use client-side rendered React, to make my dynamic data visualisation a bit easier.
+Let me check if it works.
+
+<Demo title="Testing the client-side React" type="test">
+
+<DynamicTest client:only="react" />
+(If this number goes up, it works!)
+
+</Demo>
+
+---
 
