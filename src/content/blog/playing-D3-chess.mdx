@@ -1,0 +1,223 @@
+---
+title: Playing D3 chess
+description: I loved the introduction I got to D3. Now I am ready to dive a bit deeper and see how far I can take it.
+pubDate: 2025-01-12
+heroImage: "d3-chess.png"
+---
+
+import Demo from '../../components/Demo.astro';
+import Demo4 from '../../components/D3/Demo4.astro';
+import Demo5 from '../../components/D3/Demo5.astro';
+
+Last time I finished the first tutorial and learned a lot about the basics of D3.js. For now, I am just going to continue with the second part of this tutorial and see how it progresses. The second part can be found [here](https://www.youtube.com/watch?v=Crp8UX-eQB0).
+
+The first thing they talk about is a *Scale*. As I understand it, a scale is just a fancy `map()`-function.
+
+![What is a scale?](/passion-project-blog/playing-D3-chess/what-is-scale.png)
+
+It takes a range of data and draws something visual. It does sound really cool.
+I now understand that the `.domain()`-function from earlier is just the data you are using for this fancy `map()`-function and the `.range()`-function is the pixels it represents.
+
+The `.scaleLinear()`-function is used to map things in a linear way, which also means that it can extrapolate data that isn't specifically given.
+the `.scaleOrdinal()`-function on the other hand will use only the data-points explicitly given and map them 1:1 to the range. for example:
+
+```typescript
+const colorScale = d3.scaleOrdinal()
+  .domain([1, 2, 3])
+  .range(["red", "yellow", "green"]);
+```
+
+if you give this function the number 1.5, it won't return a mix between *red* and *yellow*, it will just return *yellow*.
+
+![A screenshot of a tutorial showing in what senses data can be embedded](/passion-project-blog/playing-D3-chess/embedding-data.png)
+The screenshot above shows the way in which data can be embedded. For example, it can be done through x- and y-coordinates, through scale or color or through something like texture.
+
+<Demo title="Playing around with scales" type="D3">
+<Demo4 />
+</Demo>
+
+The code for this demo of *scales* looks like this:
+
+```typescript 
+  import * as d3 from "d3";
+  import { getNasaData } from "../../consts";
+
+  // ------------------- Simple Linear Scale -------------------
+
+  const ls1 = document.getElementById("demo4-ls-1") as HTMLSpanElement;
+  const ls2 = document.getElementById("demo4-ls-2") as HTMLSpanElement;
+  const ls3 = document.getElementById("demo4-ls-3") as HTMLSpanElement;
+  const ls4 = document.getElementById("demo4-ls-4") as HTMLSpanElement;
+
+  // A linear scale that maps any value between 4 and 42 to a value between 0 and 1.
+  const linearScale = d3.scaleLinear().domain([4, 42]).range([0, 1]);
+
+  ls1.innerText = `linearScale(4) = ${linearScale(4)}`;
+  ls2.innerText = `linearScale(42) = ${linearScale(42)}`;
+  ls3.innerText = `linearScale(23) = ${linearScale(23)}`;
+  ls4.innerText = `linearScale(43) = ${linearScale(43)}`;
+
+  // ------------------- Real World Example -------------------
+
+  const ls5 = document.getElementById("demo4-ls-5") as HTMLSpanElement;
+  const ls6 = document.getElementById("demo4-ls-6") as HTMLSpanElement;
+  const ls7 = document.getElementById("demo4-ls-7") as HTMLSpanElement;
+  const ls8 = document.getElementById("demo4-ls-8") as HTMLSpanElement;
+  const ls9 = document.getElementById("demo4-ls-9") as HTMLSpanElement;
+  const ls10 = document.getElementById("demo4-ls-10") as HTMLSpanElement;
+
+  const nasaData = await getNasaData();
+
+  const maxDiameter: number[] = nasaData.map(
+    (d: any): number => d.estimated_diameter.kilometers.estimated_diameter_max
+  );
+
+  const min = d3.min(maxDiameter) || 0;
+  const max = d3.max(maxDiameter) || 0;
+
+  const linearScale2 = d3.scaleLinear().domain([min, max]).range([0, 1]);
+
+  ls5.innerText = `linearScale2(${min}) = ${linearScale2(min)}`;
+  ls6.innerText = `linearScale2(${min + (max - min) / 2}) = ${linearScale2(
+    min + (max - min) / 2
+  )}`;
+  ls7.innerText = `linearScale2(${max}) = ${linearScale2(max)}`;
+  ls8.innerText = `linearScale2(0) = ${linearScale2(0)}`;
+  ls9.innerText = `linearScale2(1) = ${linearScale2(1)}`;
+  ls10.innerText = `linearScale2(0.5) = ${linearScale2(0.5)}`;
+
+  // ------------------- User Input Example -------------------
+
+  const input = document.getElementById("asteroid-size") as HTMLInputElement;
+  const output = document.getElementById(
+    "asteroid-approach"
+  ) as HTMLSpanElement;
+
+  const closestApproach = nasaData.map(
+    (d: any): number => d.close_approach_data[0].miss_distance.kilometers
+  );
+
+  const minApproach = d3.min(closestApproach) || 0;
+  const maxApproach = d3.max(closestApproach) || 0;
+
+  const linearScale3 = d3
+    .scaleLinear()
+    .clamp(true)
+    .domain([minApproach, maxApproach])
+    .range([0, 100]);
+
+  if (input && output) {
+    input.addEventListener("input", () => {
+      const value = parseFloat(input.value);
+      output.innerText = `percentage of asteroids that passed closer to earth than this: ${100 - Number.parseFloat(linearScale3(value)?.toFixed(2))}%`;
+    });
+  }
+
+  // ------------------- Ordinal Scale -------------------
+
+  const os1 = document.getElementById("demo4-os-1") as HTMLSpanElement;
+  const os2 = document.getElementById("demo4-os-2") as HTMLSpanElement;
+  const os3 = document.getElementById("demo4-os-3") as HTMLSpanElement;
+  const os4 = document.getElementById("demo4-os-4") as HTMLSpanElement;
+
+  const ordinalScale = d3
+    .scaleOrdinal()
+    .domain(["apple", "banana", "cherry", "date", "elderberry"])
+    .range(["green", "yellow", "red", "brown", "purple"]);
+
+  os1.innerText = `ordinalScale("apple") = ${ordinalScale("apple")}`;
+  os2.innerText = `ordinalScale("banana") = ${ordinalScale("banana")}`;
+  os3.innerText = `ordinalScale("cherry") = ${ordinalScale("cherry")}`;
+  os4.innerText = `ordinalScale("orange") = ${ordinalScale("orange")}`; // If the value is not in the domain, it will return the next value available.
+```
+
+It contains quite a lot of fluff to display everything within the demo area. The important parts is where I define the scales, of course. I am mostly trying to figure out how to use this in a dynamic way with user input and interaction.
+
+Next up is something called, the canvas.
+
+![A screenshot of a tutorial about the canvas within D3](/passion-project-blog/playing-D3-chess/the-canvas.png)
+"SVG is the canvas we are using."
+
+This part of the tutorial just talked about SVG's and `<g>`-tags. I feel quite familiar with this already, which is nice. I am going to make a small demo that combines everything the tutorials have shown me and move on.
+
+<Demo title="Bringing in all together" type="D3">
+<Demo5 />
+</Demo>
+
+```typescript
+  import * as d3 from "d3";
+  import { getNasaData } from "../../consts";
+
+  const width = 500;
+  const height = 500;
+  const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+  const nasaData = await getNasaData();
+
+  const svg = d3
+    .select("#demo5-container")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom);
+
+  const g = svg
+    .append("g")
+    .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+  const rectangle = g
+    .append("rect")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("fill", "#f5fff2");
+
+  const xMax = d3.max(nasaData, (d: any) => d.absolute_magnitude_h);
+  const xMin = d3.min(nasaData, (d: any) => d.absolute_magnitude_h);
+
+  const x = d3.scaleLinear().domain([xMin, xMax]).range([0, width]);
+
+  const yMax =
+    d3.max(nasaData, (d: any) =>
+      Number.parseFloat(d.close_approach_data[0].miss_distance.kilometers)
+    ) || 0;
+  const yMin =
+    d3.min(nasaData, (d: any) =>
+      Number.parseFloat(d.close_approach_data[0].miss_distance.kilometers)
+    ) || 0;
+
+  const y = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]);
+
+  const rMax = d3.max(
+    nasaData,
+    (d: any) => d.estimated_diameter.kilometers.estimated_diameter_max
+  );
+  const rMin = d3.min(
+    nasaData,
+    (d: any) => d.estimated_diameter.kilometers.estimated_diameter_max
+  );
+
+  const r = d3.scaleLinear().domain([rMin, rMax]).range([5, 20]);
+
+  g.append("g")
+    .selectAll("circle")
+    .data(nasaData)
+    .join("circle")
+    .attr("cx", (d: any) => x(d.absolute_magnitude_h))
+    .attr("cy", (d: any) =>
+      y(d.close_approach_data[0].miss_distance.kilometers)
+    )
+    .attr("r", (d: any) =>
+      r(d.estimated_diameter.kilometers.estimated_diameter_max)
+    )
+    .attr("fill", "black");
+
+  g.append("g")
+    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .call(d3.axisBottom(x));
+
+  g.append("g")
+    .attr("transform", `translate(${margin.left},0)`)
+    .call(d3.axisLeft(y));
+```
+
+Now that I feel like I have a basic understanding of how D3 works, I want to focus on interactivity and see how it can be used in that regard.
+
+

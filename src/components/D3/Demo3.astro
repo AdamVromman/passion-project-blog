@@ -1,0 +1,84 @@
+---
+
+---
+
+<div id="container-3">
+  <p>Paragraph 1</p>
+  <p>Paragraph 2</p>
+  <p>Paragraph 3</p>
+</div>
+<hr />
+<div id="container-4">
+  <p>Paragraph 1</p>
+  <p>Paragraph 2</p>
+  <p>Paragraph 3</p>
+</div>
+<hr />
+<div id="container-5">
+  <p>Paragraph 1</p>
+  <p>Paragraph 2</p>
+  <p>Paragraph 3</p>
+</div>
+<hr />
+<div id="container-6">
+  <input id="input-1" type="range" min="0" max="9" step="1" value="0" />
+  <input id="input-2" type="range" min="0" max="9" step="1" value="0" />
+  <input id="input-3" type="range" min="0" max="9" step="1" value="0" />
+  <p>Paragraph 1</p>
+  <p>Paragraph 2</p>
+  <p>Paragraph 3</p>
+</div>
+<script>
+  import * as d3 from "d3";
+
+  // Define a set of data.
+  const data = [1, 2, 3];
+
+  // Select all the paragraphs in the first container and simply turn them red.
+  d3.select("#container-3").selectAll("p").style("color", "red");
+
+  // Select all the paragraphs in the second container and turn them red if the data is 2, otherwise blue.
+  d3.select("#container-4")
+    .selectAll("p")
+    .data(data)
+    .style("color", (d) => (d === 2 ? "red" : "blue"));
+
+  // Select all the paragraphs in the third container and update the text to be the underlying data squared.
+  d3.select("#container-5")
+    .selectAll("p")
+    .data(data)
+    .text((d) => `Paragraph ${d * d}`);
+
+  let mutableData = [1, 1, 1];
+
+  // Change the text and color of the paragraphs in the fourth container based on the input values.
+
+  d3.select("#container-6")
+    .selectAll("p")
+    .data(mutableData)
+    .text((d) => `Paragraph ${d}`)
+    .style(
+      "color",
+      (d, index) =>
+        `#${index * index * index}${index * index * index}${d}${d}66`
+    );
+
+  const inputs = document.querySelectorAll("#container-6 input");
+
+  for (let i = 0; i < inputs.length; i++) {
+    inputs[i].addEventListener("input", (e) => {
+      if (e && e.currentTarget && e.currentTarget.value)
+        mutableData[i] = e.currentTarget.value;
+
+      d3.select("#container-6")
+        .selectAll("p")
+        .data(mutableData)
+        .text((d) => `Paragraph ${d}`)
+        .style(
+          "color",
+          (d, index) =>
+            `#${index * index * index}${index * index * index}${d}${d}66`
+        );
+    });
+  }
+</script>
