@@ -1,0 +1,78 @@
+---
+
+---
+
+<div id="demo5-container"></div>
+<script>
+  import * as d3 from "d3";
+  import { getNasaData } from "../../consts";
+
+  const width = 500;
+  const height = 500;
+  const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+  const nasaData = await getNasaData();
+
+  const svg = d3
+    .select("#demo5-container")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom);
+
+  const g = svg
+    .append("g")
+    .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+  const rectangle = g
+    .append("rect")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("fill", "#f5fff2");
+
+  const xMax = d3.max(nasaData, (d: any) => d.absolute_magnitude_h);
+  const xMin = d3.min(nasaData, (d: any) => d.absolute_magnitude_h);
+
+  const x = d3.scaleLinear().domain([xMin, xMax]).range([0, width]);
+
+  const yMax =
+    d3.max(nasaData, (d: any) =>
+      Number.parseFloat(d.close_approach_data[0].miss_distance.kilometers)
+    ) || 0;
+  const yMin =
+    d3.min(nasaData, (d: any) =>
+      Number.parseFloat(d.close_approach_data[0].miss_distance.kilometers)
+    ) || 0;
+
+  const y = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]);
+
+  const rMax = d3.max(
+    nasaData,
+    (d: any) => d.estimated_diameter.kilometers.estimated_diameter_max
+  );
+  const rMin = d3.min(
+    nasaData,
+    (d: any) => d.estimated_diameter.kilometers.estimated_diameter_max
+  );
+
+  const r = d3.scaleLinear().domain([rMin, rMax]).range([5, 20]);
+
+  g.append("g")
+    .selectAll("circle")
+    .data(nasaData)
+    .join("circle")
+    .attr("cx", (d: any) => x(d.absolute_magnitude_h))
+    .attr("cy", (d: any) =>
+      y(d.close_approach_data[0].miss_distance.kilometers)
+    )
+    .attr("r", (d: any) =>
+      r(d.estimated_diameter.kilometers.estimated_diameter_max)
+    )
+    .attr("fill", "black");
+
+  g.append("g")
+    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .call(d3.axisBottom(x));
+
+  g.append("g")
+    .attr("transform", `translate(${margin.left},0)`)
+    .call(d3.axisLeft(y));
+</script>

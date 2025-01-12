@@ -1,0 +1,141 @@
+---
+
+---
+
+<div class="demo4-container">
+  <br />
+  <code>const linearScale = d3.scaleLinear().domain([4, 42]).range([0, 1])</code
+  >
+  <p id="demo4-ls-1"></p>
+  <p id="demo4-ls-2"></p>
+  <p id="demo4-ls-3"></p>
+  <p id="demo4-ls-4"></p>
+  <br />
+  <hr />
+  <br />
+  <code>
+    const linearScale2 = d3.scaleLinear().domain([min, max]).range([0, 1])</code
+  >
+  <p id="demo4-ls-5"></p>
+  <p id="demo4-ls-6"></p>
+  <p id="demo4-ls-7"></p>
+  <p id="demo4-ls-8"></p>
+  <p id="demo4-ls-9"></p>
+  <p id="demo4-ls-10"></p>
+  <br />
+  <hr />
+  <br />
+  <input
+    type="number"
+    id="asteroid-size"
+    placeholder="Enter approach distance in km"
+  />
+
+  <p id="asteroid-approach">
+    percentage of asteroids that passed closer to earth than this: 0
+  </p>
+  <br />
+  <hr />
+  <br />
+  <code>
+    const ordinalScale = d3 .scaleOrdinal() .domain(["apple", "banana",
+    "cherry", "date", "elderberry"]) .range(["green", "yellow", "red", "brown",
+    "purple"])</code
+  >
+  <p id="demo4-os-1"></p>
+  <p id="demo4-os-2"></p>
+  <p id="demo4-os-3"></p>
+  <p id="demo4-os-4"></p>
+</div>
+<script>
+  import * as d3 from "d3";
+  import { getNasaData } from "../../consts";
+
+  // ------------------- Simple Linear Scale -------------------
+
+  const ls1 = document.getElementById("demo4-ls-1") as HTMLSpanElement;
+  const ls2 = document.getElementById("demo4-ls-2") as HTMLSpanElement;
+  const ls3 = document.getElementById("demo4-ls-3") as HTMLSpanElement;
+  const ls4 = document.getElementById("demo4-ls-4") as HTMLSpanElement;
+
+  // A linear scale that maps any value between 4 and 42 to a value between 0 and 1.
+  const linearScale = d3.scaleLinear().domain([4, 42]).range([0, 1]);
+
+  ls1.innerText = `linearScale(4) = ${linearScale(4)}`;
+  ls2.innerText = `linearScale(42) = ${linearScale(42)}`;
+  ls3.innerText = `linearScale(23) = ${linearScale(23)}`;
+  ls4.innerText = `linearScale(43) = ${linearScale(43)}`;
+
+  // ------------------- Real World Example -------------------
+
+  const ls5 = document.getElementById("demo4-ls-5") as HTMLSpanElement;
+  const ls6 = document.getElementById("demo4-ls-6") as HTMLSpanElement;
+  const ls7 = document.getElementById("demo4-ls-7") as HTMLSpanElement;
+  const ls8 = document.getElementById("demo4-ls-8") as HTMLSpanElement;
+  const ls9 = document.getElementById("demo4-ls-9") as HTMLSpanElement;
+  const ls10 = document.getElementById("demo4-ls-10") as HTMLSpanElement;
+
+  const nasaData = await getNasaData();
+
+  const maxDiameter: number[] = nasaData.map(
+    (d: any): number => d.estimated_diameter.kilometers.estimated_diameter_max
+  );
+
+  const min = d3.min(maxDiameter) || 0;
+  const max = d3.max(maxDiameter) || 0;
+
+  const linearScale2 = d3.scaleLinear().domain([min, max]).range([0, 1]);
+
+  ls5.innerText = `linearScale2(${min}) = ${linearScale2(min)}`;
+  ls6.innerText = `linearScale2(${min + (max - min) / 2}) = ${linearScale2(
+    min + (max - min) / 2
+  )}`;
+  ls7.innerText = `linearScale2(${max}) = ${linearScale2(max)}`;
+  ls8.innerText = `linearScale2(0) = ${linearScale2(0)}`;
+  ls9.innerText = `linearScale2(1) = ${linearScale2(1)}`;
+  ls10.innerText = `linearScale2(0.5) = ${linearScale2(0.5)}`;
+
+  // ------------------- User Input Example -------------------
+
+  const input = document.getElementById("asteroid-size") as HTMLInputElement;
+  const output = document.getElementById(
+    "asteroid-approach"
+  ) as HTMLSpanElement;
+
+  const closestApproach = nasaData.map(
+    (d: any): number => d.close_approach_data[0].miss_distance.kilometers
+  );
+
+  const minApproach = d3.min(closestApproach) || 0;
+  const maxApproach = d3.max(closestApproach) || 0;
+
+  const linearScale3 = d3
+    .scaleLinear()
+    .clamp(true)
+    .domain([minApproach, maxApproach])
+    .range([0, 100]);
+
+  if (input && output) {
+    input.addEventListener("input", () => {
+      const value = parseFloat(input.value);
+      output.innerText = `percentage of asteroids that passed closer to earth than this: ${100 - Number.parseFloat(linearScale3(value)?.toFixed(2))}%`;
+    });
+  }
+
+  // ------------------- Ordinal Scale -------------------
+
+  const os1 = document.getElementById("demo4-os-1") as HTMLSpanElement;
+  const os2 = document.getElementById("demo4-os-2") as HTMLSpanElement;
+  const os3 = document.getElementById("demo4-os-3") as HTMLSpanElement;
+  const os4 = document.getElementById("demo4-os-4") as HTMLSpanElement;
+
+  const ordinalScale = d3
+    .scaleOrdinal()
+    .domain(["apple", "banana", "cherry", "date", "elderberry"])
+    .range(["green", "yellow", "red", "brown", "purple"]);
+
+  os1.innerText = `ordinalScale("apple") = ${ordinalScale("apple")}`;
+  os2.innerText = `ordinalScale("banana") = ${ordinalScale("banana")}`;
+  os3.innerText = `ordinalScale("cherry") = ${ordinalScale("cherry")}`;
+  os4.innerText = `ordinalScale("orange") = ${ordinalScale("orange")}`;
+</script>

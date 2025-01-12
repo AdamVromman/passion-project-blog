@@ -6,8 +6,8 @@
   font-family: "Prophet";
   font-style: normal;
   font-weight: 100 900;
-  src: url("/passion-project-blog/fonts/ABCDailyScotchVariableEdu-Light.woff")
-    format("woff");
+  src: url("/passion-project-blog/fonts/ABCSocialVariableEdu-Regular.ttf")
+    format("truetype");
 }
 
 html {
@@ -29,16 +29,9 @@ body {
     @apply mb-8;
   }
 
-  p:has(img),
-  div:has(img) {
-    p {
-      @apply mb-0;
-    }
-    @apply mb-2;
-  }
-
   img {
     @apply rounded-md;
+    @apply border border-black;
   }
 
   a {
@@ -87,7 +80,7 @@ body {
 }
 
 h1 {
-  @apply text-7xl font-bold text-center text-green;
+  @apply text-7xl font-black text-center text-green;
   @apply leading-tight;
 }
 
