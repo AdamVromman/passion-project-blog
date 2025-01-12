@@ -83,7 +83,7 @@ planning.forEach((plan) => {
                   if (post) {
                     return (
                       <li>
-                        <a class="post-teaser" href={`${BASE}/${post.id}/`}>
+                        <a class="post-teaser" href={`${BASE}${post.id}/`}>
                           <div class="info">
                             <h4 class="title">{post.data.title}</h4>{" "}
                             <p class="date">
@@ -94,7 +94,7 @@ planning.forEach((plan) => {
                           </div>
                           <img
                             class="image"
-                            src={`${BASE}/headers/${post.data.heroImage}`}
+                            src={`${BASE}headers/${post.data.heroImage}`}
                             alt={post.data.title}
                           />
 

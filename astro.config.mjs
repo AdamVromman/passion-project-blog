@@ -11,9 +11,7 @@ import vercel from "@astrojs/vercel";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://example.com",
   integrations: [mdx(), sitemap(), react(), tailwind()],
-  base: "passion-project-blog/",
   output: "server",
   adapter: vercel({
     webAnalytics: {
