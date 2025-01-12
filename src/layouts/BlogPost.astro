@@ -24,21 +24,18 @@ const { title, description, pubDate, heroImage, nextPost, previousPost } =
   <body>
     <main>
       <article class="blog-post">
-        <a class="button back-button" href={`${BASE}/`} class="back">Home</a>
+        <a class="button back-button" href={`${BASE}`} class="back">Home</a>
         <div class="navigation-buttons">
           {
             previousPost && (
-              <a
-                class="button previous-button"
-                href={`${BASE}/${previousPost}`}
-              >
+              <a class="button previous-button" href={`${BASE}${previousPost}`}>
                 Previous post
               </a>
             )
           }
           {
             nextPost && (
-              <a class="button next-button" href={`${BASE}/${nextPost}`}>
+              <a class="button next-button" href={`${BASE}${nextPost}`}>
                 Next post
               </a>
             )
@@ -49,7 +46,7 @@ const { title, description, pubDate, heroImage, nextPost, previousPost } =
           heroImage && (
             <img
               class="hero-image"
-              src={`${BASE}/headers/${heroImage}`}
+              src={`${BASE}headers/${heroImage}`}
               alt=""
             />
           )

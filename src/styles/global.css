@@ -6,8 +6,7 @@
   font-family: "Prophet";
   font-style: normal;
   font-weight: 100 900;
-  src: url("/passion-project-blog/fonts/ABCSocialVariableEdu-Regular.ttf")
-    format("truetype");
+  src: url("/fonts/ABCSocialVariableEdu-Regular.ttf") format("truetype");
 }
 
 html {
