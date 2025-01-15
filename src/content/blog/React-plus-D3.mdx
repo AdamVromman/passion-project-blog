@@ -1,0 +1,294 @@
+---
+title: React + D3
+description: The last thing I want to do with D3 is combining it with React and making it as interactive as possible.
+pubDate: 2025-01-14
+heroImage: "reactD3.jpeg"
+---
+
+import Demo from '../../components/Demo.astro';
+import DemoReact from '../../components/D3/DemoReact.tsx';
+import DemoInteractive from '../../components/D3/DemoInteractive.tsx';
+
+Tonight, I want to follow another tutorial and play around a bit with the combination of D3 and React. The reason I want to do this, is because my end-product will be highly interactive, which is ideal for React. Now I want to find out if it is also ideal for D3.
+
+The tutorial I will be following is an article by *Camelia D. Brumar* which you can find [here](https://kamibrumi.medium.com/getting-started-with-react-d3-js-d86ccea05f08).
+
+<Demo title='First React Demo' type='D3'>
+<DemoReact client:only="react" />
+</Demo>
+
+This is the code for the demo:
+
+```tsx
+import * as d3 from "d3";
+import { useEffect, useRef } from "react";
+import type { DataPoint1 } from "../../consts";
+
+const DemoReact = () => {
+  const ref = useRef(null);
+
+  const margin = { top: 20, right: 20, bottom: 60, left: 50 };
+  const width = 700 + margin.left + margin.right;
+  const height = 400 + margin.top + margin.bottom;
+
+  useEffect(() => {
+    const svg = d3
+      .select(ref.current)
+      .attr("height", height)
+      .append("g")
+      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+    // This is new to me so I wanted to console.log() it for a second
+    d3.csv(
+      "https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/7_OneCatOneNum_header.csv",
+      (d: any) => d as DataPoint1
+    ).then((data) => {
+      console.log(data);
+
+      const x = d3
+        .scaleBand()
+        .domain(
+          data
+            .sort((a: any, b: any) => b.Value - a.Value)
+            .map((d: any) => d.Country)
+        )
+        .range([0, width - margin.left - margin.right])
+        .padding(0.2);
+
+      svg
+        .append("g")
+        .attr(
+          "transform",
+          `translate(0, ${height - margin.bottom - margin.top})`
+        )
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+        .attr("transform", "translate(-10,0)rotate(-45)")
+        .style("text-anchor", "end");
+
+      //  This part I did before the tutorial to see if I could. The only difference is that the tutorial uses hard-coded values for the domain.
+      //  const yMax = d3.max(data.map((d: any) => Number.parseInt(d.Value))) ?? 0;
+      //  const yMin = d3.min(data.map((d: any) => Number.parseInt(d.Value))) ?? 0;
+      //  const y = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]);
+      //  svg.append("g").call(d3.axisLeft(y));
+
+      const y = d3
+        .scaleLinear()
+        .domain([0, 13000])
+        .range([height - margin.bottom - margin.top, 0]);
+      svg.append("g").call(d3.axisLeft(y));
+
+      svg
+        .selectAll("mybar")
+        .data(data.sort((a: any, b: any) => b.Value - a.Value))
+        .join("rect")
+        .attr("x", (d) => x(d.Country) ?? 0)
+        .attr("y", (d: any) => y(d.Value))
+        .attr("width", x.bandwidth())
+        .attr(
+          "height",
+          (d: any) => height - margin.bottom - margin.top - y(d.Value)
+        )
+        .attr("fill", "#5f0f40");
+    });
+  }, []);
+
+  return <svg style={{ width: "100%" }} height={height} ref={ref} />;
+};
+
+export default DemoReact;
+
+```
+
+Some useful things I found out is that I can make the width dynamic instead of static, how to import CSV files and that I can directly use a *React Ref* in my D3 logic.
+
+As of now, it is not interactive or animated yet. That is the next step. For this, I am just going to play around a bit, while looking up stuff more dynamically, instead of following a tutorial step-by-step. I want to discover it more on my own.
+
+<Demo title="React + Interactivity" type="D3">
+<DemoInteractive client:only="react" />
+</Demo>
+
+The demo is programmed as followed:
+
+```tsx
+import { useEffect, useRef, useState } from "react";
+import * as d3 from "d3";
+import type { Country } from "../../consts";
+
+const DemoInteractive = () => {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+  const height = 400 + margin.top + margin.bottom;
+  let width = 700 + margin.left + margin.right;
+
+  useEffect(() => {
+    // Set the variable width to the (dynamic) width of the svg element.
+    if (svgRef.current) width = svgRef.current.clientWidth;
+
+    // Transform lat and long to x and y values.
+    const transformLatLong = (lat: number, long: number) => {
+      const x = ((long + 180) / 360) * (width - margin.left - margin.right);
+      const y = ((-1 * lat + 90) / 180) * (height - margin.top - margin.bottom);
+
+      return { x, y };
+    };
+
+    // Get the local data.
+    d3.csv("/countries.csv").then((data: any) => {
+      // Here I transformed the data a bit to make it work better with Typescript.
+      const dataTransformed = data.map((d: any): Country => {
+        const [lat, long] = d["latlng"].split(",").map(Number);
+        return {
+          name: d["name.common"],
+          lat: lat,
+          long: long,
+          landlocked: d.landlocked === "1",
+          flag: d.flag,
+          languages: d.languages,
+          region: d.region,
+          independent: d.independent === "1",
+          area: Number(d.area),
+          x: transformLatLong(lat, long).x,
+          y: transformLatLong(lat, long).y,
+        };
+      });
+
+      // Get the max and min values for the area property.
+
+      const maxArea = d3.max(dataTransformed, (d: Country) => d.area) ?? 0;
+      const minArea = d3.min(dataTransformed, (d: Country) => d.area) ?? 0;
+      const areaDiff = Math.abs(maxArea - minArea);
+
+      // This function makes the text size and the stroke stay the same size when zooming in and out.
+      //it also manipulates the map when a user zooms.
+      const handleZoom = (e: any) => {
+        d3.select(svgRef.current).select("g").attr("transform", e.transform);
+        d3.selectAll("text").attr("font-size", `${7 / e.transform.k}px`);
+
+        d3.selectAll<Element, Country>("circle").attr(
+          "stroke-width",
+          (d: Country) => (d.landlocked ? `${2 / e.transform.k}px` : 0)
+        );
+      };
+
+      // This function allows zoom/pan and also limits the zoom and the pan to a certain extent.
+      const zoomFunction = d3
+        .zoom()
+        .on("zoom", handleZoom)
+        .scaleExtent([1, 10])
+        .translateExtent([
+          [0, 0],
+          [width, height],
+        ]);
+
+      // Attach the zoom/pan functionality to the svg element.
+      d3.select(svgRef.current).call(zoomFunction);
+
+      // This function allows for programmatic zooming to a specific country.
+      const programmaticZoom = (country: Country) => {
+        d3.select(svgRef.current)
+          .select("g")
+          .transition()
+          .call(zoomFunction.scaleTo, 1)
+          .duration(2000)
+          .transition()
+          .call(
+            zoomFunction.transform,
+            d3.zoomIdentity
+              .scale(5)
+              .translate(
+                -country.x + width / (2 * 5),
+                -country.y + height / (2 * 5)
+              )
+          )
+          .duration(2000);
+      };
+
+      // Transform regions to colors.
+      const regionD3 = d3
+        .scaleOrdinal()
+        .domain(
+          Array.from(new Set(dataTransformed.map((d: Country) => d.region)))
+        )
+        .range([
+          "red",
+          "blue",
+          "green",
+          "yellow",
+          "purple",
+          "orange",
+          "pink",
+          "brown",
+          "black",
+          "gray",
+        ]);
+
+      // Add a main group to the svg element.
+      const main = d3
+        .select(svgRef.current)
+        .append("g")
+        .attr("width", width - margin.left - margin.right)
+        .attr("height", height - margin.top - margin.bottom)
+        .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+      // A simple border to the map.
+      const rect = d3
+        .select(svgRef.current)
+        .append("rect")
+        .attr("width", width - margin.left - margin.right)
+        .attr("height", height - margin.top - margin.bottom)
+        .attr("transform", `translate(${margin.left}, ${margin.top})`)
+        .attr("fill", "none")
+        .attr("stroke", "black");
+
+      // Add the circles per country, x and y values, radius, fill, stroke and stroke-width.
+      main
+        .selectAll<Element, Country>("circle")
+        .data(dataTransformed)
+        .enter()
+        .append("circle")
+        .attr("cx", (d: Country) => d.x)
+        .attr("cy", (d: Country) => d.y)
+        // .attr("transform", `translate(${width / 2}, ${height / 2})`)
+        .attr("r", (d: any) => 5 + (d.area / areaDiff) * 20)
+        .attr("fill", (d: any) => regionD3(d.region) as string)
+        .attr("stroke", "black")
+        .attr("stroke-width", (d: Country) => (d.landlocked ? 2 : 0))
+        .attr("cursor", "pointer")
+        .on("click", (e: any, d: Country) => {
+          programmaticZoom(d);
+        });
+
+      // Add the text per country, x and y values, text-anchor, transform, font-size.
+      main
+        .selectAll<Element, Country>("text")
+        .data(dataTransformed)
+        .enter()
+        .append("text")
+        .text((d: Country) => d.flag + d.name)
+        .attr("x", (d: Country) => d.x)
+        .attr("y", (d: Country) => d.y)
+        .attr("cursor", "pointer")
+        .attr("text-anchor", "middle")
+        .attr("font-size", `7px`)
+        .on("click", (e: any, d: Country) => {
+          programmaticZoom(d);
+        });
+    });
+  }, []);
+
+  return (
+    <svg
+      className="bg-gray-400 w-full rounded-xl"
+      height={height}
+      ref={svgRef}
+    ></svg>
+  );
+};
+
+export default DemoInteractive;
+```
+
+The demo basically shows all of the country and territories in the world, represented by a ball with a size relative to the size of the country and a color based on the region it belongs to. Some things to note are that you can clicking on a country will  zoom in on that country. I also added a function that made sure the text and stroke would stay consistent when zooming out, which basically ment offsetting the size or width by dividing it by the the amount of zoom.
+
+This really helped me understanding interactivity in D3 and I hope to take it with me when working on with the other frameworks, like when setting up the svg's.
