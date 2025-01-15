@@ -21,3 +21,22 @@ export const getNasaData = async () => {
     return [];
   }
 };
+
+export interface DataPoint1 {
+  Country: string;
+  Value: string;
+}
+
+export interface Country {
+  name: string;
+  lat: number;
+  long: number;
+  landlocked: boolean;
+  flag: string;
+  languages: string[];
+  region: string;
+  independent: boolean;
+  area: number;
+  x: number;
+  y: number;
+}

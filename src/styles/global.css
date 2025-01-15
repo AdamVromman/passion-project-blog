@@ -23,6 +23,7 @@ body {
 
 .prose {
   @apply max-w-screen-md mx-auto;
+  @apply text-xl leading-tight;
 
   & > * {
     @apply mb-8;
