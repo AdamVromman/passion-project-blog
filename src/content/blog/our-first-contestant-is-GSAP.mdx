@@ -4,3 +4,41 @@ description: With D3 introduced, let's see what we can do with GSAP in the mix.
 pubDate: 2025-01-15
 heroImage: "gsap-animation.gif"
 ---
+
+import Demo from "../../components/Demo.astro";
+import FirstGSAPDemo from "../../components/GSAP/FirstGSAPDemo"
+
+Okay! Finally time to move on to the *actual* animation libraries. First on the line is GSAP, because I am already familiar with it. For all of the libraries, I am going to try and animate the same things, to see how it works and how they hold up when, for example, I want to animate a few thousand points.
+
+For data, we are going to use a 10.000-entry .csv file called organisations.
+
+```csv
+Index,Organization Id,Name,Website,Country,Description,Founded,Industry,Number of employees
+
+1,522816eF8fdBE6d,Mckinney PLC,http://soto.com/,Sri Lanka,Synergized global system engine,1988,Dairy,3930
+
+2,70C7FBD7e6Aa3Ea,Cunningham LLC,http://harding-duffy.com/,Namibia,Team-oriented fault-tolerant adapter,2018,Library,7871
+
+3,428B397eA2d7290,Ruiz-Walls,http://www.atkins.biz/,Iran,Re-contextualized bifurcated moderator,2003,Hospital / Health Care,3095
+
+4,9D234Ae8Cc51C1c,"Parrish, Osborne and Clarke",http://salazar.info/,British Indian Ocean Territory (Chagos Archipelago),Fully-configurable next generation concept,1989,Supermarkets,5422
+
+5,6CDCcdE3D0b7b44,"Diaz, Robles and Haley",https://www.brooks-scott.net/,Botswana,Inverse intangible methodology,2013,Nanotechnology,3135
+
+6,cdAD9BBF227ADAE,Keith PLC,http://www.mathews.com/,Ecuador,Cross-group coherent strategy,1978,Online Publishing,7233
+
+7,0fe6F8Dd1Cf5e4d,Humphrey-Myers,https://faulkner-mclaughlin.info/,Sierra Leone,Adaptive directional process improvement,2005,Publishing Industry,6022
+
+8,ECC0FBd0dc4aEfc,Castaneda-Mcmahon,http://www.anthony.com/,Zimbabwe,Front-line value-added emulation,2015,Defense / Space,4580
+
+9,e0E6cfAE68d08c9,Santos-Bowman,https://www.oneill-guerrero.org/,Ecuador,Multi-layered optimizing system engine,1979,Computer Hardware,3245
+
+10,A7DdBb239A86689,Valdez-Estes,http://melendez-malone.com/,Timor-Leste,Diverse next generation open architecture,1985,Plastics,1785
+[...]
+```
+
+But let's start with a simple square performing a circular movement. For the sake of exercise, I will try and intergrate D3 into these demo's as well.
+
+<Demo title="Moving a square" type="GSAP">
+<FirstGSAPDemo client:only="react" />
+</Demo>

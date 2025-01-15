@@ -16,12 +16,14 @@ const titleTransformed = title.toLowerCase().replace(/\s/g, "-");
     ><h4 class="title">{title} ({type})</h4><span class="arrow">↓</span></button
   >
   <div id={`content-${titleTransformed}`} class="content">
+    <pre class="fps">0</pre>
     <slot />
   </div>
 
   <script define:vars={{ titleTransformed }}>
     const title = document.getElementById(`title-${titleTransformed}`);
     const content = document.getElementById(`content-${titleTransformed}`);
+    const fpsText = document.getElementById("fps");
 
     if (title && content) {
       title.addEventListener("click", () => {

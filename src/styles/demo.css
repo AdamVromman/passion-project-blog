@@ -2,6 +2,10 @@
   @apply bg-gray-100;
   @apply p-4 rounded-lg;
 
+  .content {
+    @apply relative;
+  }
+
   .title {
     @apply font-bold text-green text-2xl mb-0;
   }
@@ -24,5 +28,9 @@
 
   .demo-button {
     @apply w-full flex flex-row items-center justify-between;
+  }
+
+  .fps {
+    @apply right-0 absolute text-sm italic text-yellow-300 bg-black/50 w-min;
   }
 }
