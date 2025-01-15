@@ -121,9 +121,11 @@ const { title, description, pubDate, heroImage, nextPost, previousPost } =
           times.push(now);
           fps = times.length;
           for (let element of fpsTexts) {
-            if (fps < 30) element.style.color = "#fc0303";
-            else if (fps < 60) element.style.color = "#fc9d03";
-            else element.style.color = "#0bfc03";
+            const htmlElement = element as HTMLElement;
+            if (fps > 30) {
+              htmlElement.style.color = "#ffff00";
+              if (fps > 60) htmlElement.style.color = "#04ff00";
+            }
 
             element.textContent = fps + "fps";
           }

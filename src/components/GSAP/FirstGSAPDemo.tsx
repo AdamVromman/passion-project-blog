@@ -14,7 +14,7 @@ const FirstGSAPDemo = () => {
         .append("rect")
         .attr("width", 100)
         .attr("height", 100)
-        .attr("x", svgRef.current?.clientWidth / 2 - 50)
+        .attr("x", (svgRef.current?.clientWidth ?? 0) / 2 - 50)
         .attr("y", 50)
         .attr("fill", "red")
         .attr("transform-origin", "50 150");
@@ -24,6 +24,7 @@ const FirstGSAPDemo = () => {
         duration: 2,
         repeat: -1,
         ease: "none",
+        overwrite: true,
       });
     },
     { scope: svgRef, dependencies: [] }

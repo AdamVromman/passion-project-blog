@@ -6,7 +6,8 @@ heroImage: "gsap-animation.gif"
 ---
 
 import Demo from "../../components/Demo.astro";
-import FirstGSAPDemo from "../../components/GSAP/FirstGSAPDemo"
+import FirstGSAPDemo from "../../components/GSAP/FirstGSAPDemo";
+import SecondGSAPDemo from "../../components/GSAP/SecondGSAPDemo";
 
 Okay! Finally time to move on to the *actual* animation libraries. First on the line is GSAP, because I am already familiar with it. For all of the libraries, I am going to try and animate the same things, to see how it works and how they hold up when, for example, I want to animate a few thousand points.
 
@@ -41,4 +42,42 @@ But let's start with a simple square performing a circular movement. For the sak
 
 <Demo title="Moving a square" type="GSAP">
 <FirstGSAPDemo client:only="react" />
+</Demo>
+
+(By the way, I added an FPS counter in the meantime. It will help me, and you, to determine wheter things are working all right or not. I didn't write the code for it, but I adjusted it to my needs. The original code can also be found [here](https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html))
+
+```typescript
+      const times: number[] = [];
+      let fps;
+
+      const fpsTexts = document.getElementsByClassName("fps");
+
+      function refreshLoop() {
+        window.requestAnimationFrame(() => {
+          const now = performance.now();
+          while (times.length > 0 && times[0] <= now - 1000) {
+            times.shift();
+          }
+          times.push(now);
+          fps = times.length;
+          for (let element of fpsTexts) {
+            const htmlElement = element as HTMLElement;
+            if (fps > 30) {
+              htmlElement.style.color = "#ffff00";
+              if (fps > 60) htmlElement.style.color = "#04ff00";
+            }
+
+            element.textContent = fps + "fps";
+          }
+          refreshLoop();
+        });
+      }
+
+      refreshLoop();
+```
+
+Now that we have one cube spinning in place, let's try that with a few more, starting with a 10, 100, 1.000 and 10.000.
+
+<Demo title="Moving a bunch of squares" type="GSAP">
+<SecondGSAPDemo client:only="react" />
 </Demo>

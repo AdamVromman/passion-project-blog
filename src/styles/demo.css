@@ -31,6 +31,6 @@
   }
 
   .fps {
-    @apply right-0 absolute text-sm italic text-yellow-300 bg-black/50 w-min;
+    @apply sticky ml-auto top-8 text-sm italic text-red bg-black/50 w-min;
   }
 }
