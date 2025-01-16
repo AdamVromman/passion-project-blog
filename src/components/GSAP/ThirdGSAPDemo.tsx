@@ -16,6 +16,14 @@ const ThirdGSAPDemo = () => {
   const [value, setValue] = useState(1);
   const [stringLength, setStringLength] = useState(1);
   const [trainAmount, setTrainAmount] = useState(1);
+  const [trainsTimeline, setTrainsTimeline] = useState<gsap.core.Timeline>(
+    gsap.timeline()
+  );
+  const [wordsTimeline, setWordsTimeline] = useState<gsap.core.Timeline>(
+    gsap.timeline()
+  );
+  const [wordsPlaying, setWordsPlaying] = useState(false);
+  const [trainsPlaying, setTrainsPlaying] = useState(false);
 
   useEffect(() => {
     d3.csv("/organizations.csv").then((data: any) => {
@@ -50,6 +58,8 @@ const ThirdGSAPDemo = () => {
       )
       .attr("text-anchor", "middle");
 
+    const tl = gsap.timeline();
+
     squares.each((d, i, nodes) => {
       const node = nodes[i];
 
@@ -61,7 +71,7 @@ const ThirdGSAPDemo = () => {
         ),
       });
 
-      gsap.fromTo(
+      tl.fromTo(
         node,
         {
           x: -10 - Number.parseInt(d["Number of employees"]) / 100,
@@ -74,9 +84,12 @@ const ThirdGSAPDemo = () => {
           yoyo: true,
           ease: "none",
           overwrite: "auto",
-        }
+        },
+        0
       );
     });
+
+    setWordsTimeline(tl);
   });
 
   const setText = contextSafe((letters: number) => {
@@ -105,10 +118,12 @@ const ThirdGSAPDemo = () => {
       });
     });
 
+    const tl = gsap.timeline();
+
     Array.from(trains)
       .slice(0, amount)
       .forEach((node, index) => {
-        gsap.fromTo(
+        tl.fromTo(
           node,
           {
             x: index % 2 === 0 ? -24 - 254 : mainRef.current?.clientWidth - 24,
@@ -121,10 +136,26 @@ const ThirdGSAPDemo = () => {
             ease: "none",
             delay: Math.random(),
             repeatDelay: Math.random(),
-          }
+          },
+          0
         );
       });
+
+    setTrainsTimeline(tl);
   };
+
+  useEffect(() => {
+    if (!trainsPlaying) {
+      trainsTimeline.pause();
+    } else {
+      trainsTimeline.play();
+    }
+    if (!wordsPlaying) {
+      wordsTimeline.pause();
+    } else {
+      wordsTimeline.play();
+    }
+  }, [trainsPlaying, wordsPlaying]);
 
   return (
     <div ref={mainRef} className="w-full flex flex-col gap-8">
@@ -139,8 +170,8 @@ const ThirdGSAPDemo = () => {
           value={value}
           step={1}
           onChange={(e) => {
-            setTrainAmount(1);
-            drawTrains(1);
+            setTrainsPlaying(false);
+            setWordsPlaying(true);
             setValue(Number.parseInt(e.target.value));
             drawSquares(Number.parseInt(e.target.value));
           }}
@@ -154,8 +185,8 @@ const ThirdGSAPDemo = () => {
           value={stringLength}
           step={1}
           onChange={(e) => {
-            setTrainAmount(1);
-            drawTrains(1);
+            setTrainsPlaying(false);
+            setWordsPlaying(true);
             setStringLength(Number.parseInt(e.target.value));
             setText(Number.parseInt(e.target.value));
           }}
@@ -174,11 +205,8 @@ const ThirdGSAPDemo = () => {
         value={trainAmount}
         step={1}
         onChange={(e) => {
-          setValue(1);
-          setStringLength(1);
-          drawSquares(1);
-          setText(1);
-
+          setWordsPlaying(false);
+          setTrainsPlaying(true);
           setTrainAmount(Number.parseInt(e.target.value));
           drawTrains(Number.parseInt(e.target.value));
         }}
