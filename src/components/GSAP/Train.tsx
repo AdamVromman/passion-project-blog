@@ -1,4 +1,4 @@
-import "../../styles/train.css";
+import "../../styles/svg.css";
 
 const Train = () => {
   return (
