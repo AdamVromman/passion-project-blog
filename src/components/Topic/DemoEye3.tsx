@@ -12,7 +12,7 @@ function shuffleArray(array: any[]) {
   }
 }
 
-const DemoEye2 = () => {
+const DemoEye3 = () => {
   const main = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
   const [womenKilled, setWomenKilled] = useState<number | null>(null);
@@ -27,9 +27,9 @@ const DemoEye2 = () => {
 
   const [svgData, setSVGdata] = useState<any[]>([null]);
 
-  const date = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const date = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-  const [weekStart, setWeekStart] = useState(
+  const [day, setDay] = useState(
     new Date(date.getFullYear(), date.getMonth() - 1, date.getDate(), 1, 0)
   );
 
@@ -47,64 +47,43 @@ const DemoEye2 = () => {
     return 0;
   };
 
-  const getWeeklyData = async (weekStartDay: Date) => {
+  const getData = async (day: Date) => {
     await fetch(
       "https://data.techforpalestine.org/api/v2/casualties_daily.json"
     ).then(async (response) => {
       if (response.ok) {
+        let previousDay: any;
         await response.json().then((data: any[]) => {
-          const date1 = data.find((d: any) => {
+          const date1 = data.find((d: any, i: number, data: any[]) => {
             const date = new Date(d.report_date);
-            if (date.getTime() === weekStartDay.getTime())
-              return date.getTime() === weekStartDay.getTime();
+            if (date.getTime() === day.getTime())
+              previousDay = data[i - 1] ?? null;
+            return date.getTime() === day.getTime();
           });
 
-          const killed = data
-            .filter((d: any) => {
-              const date = new Date(d.report_date);
-              return (
-                date.getTime() > weekStartDay.getTime() &&
-                date.getTime() <=
-                  weekStartDay.getTime() + 7 * 24 * 60 * 60 * 1000
-              );
-            })
-            .reduce((acc, d) => {
-              return acc + d.killed;
-            }, 0);
+          console.log(date1, previousDay);
 
-          const date2 = data.find((d: any) => {
-            const date = new Date(d.report_date);
-            if (
-              date.getTime() ===
-              weekStartDay.getTime() + 6 * 24 * 60 * 60 * 1000
-            )
-              return (
-                date.getTime() ===
-                weekStartDay.getTime() + 6 * 24 * 60 * 60 * 1000
-              );
-          });
-
-          if (date1 && date2 && date1.report_source === date2.report_source) {
+          if (
+            date1 &&
+            previousDay &&
+            date1.report_source === previousDay.report_source
+          ) {
             const childrenKilled =
-              (date2.killed_children_cum ?? date2.ext_killed_children_cum) -
-              (date1.killed_children_cum ?? date1.ext_killed_children_cum);
+              date1.ext_killed_children_cum -
+              previousDay.ext_killed_children_cum;
             const womenKilled =
-              (date2.killed_women_cum ?? date2.ext_killed_women_cum) -
-              (date1.killed_women_cum ?? date1.ext_killed_women_cum);
+              date1.ext_killed_women_cum - previousDay.ext_killed_women_cum;
             const emergencyServiceMembersKilled =
-              (date2.civdef_killed_cum ?? date2.ext_civdef_killed_cum) -
-              (date1.civdef_killed_cum ?? date1.ext_civdef_killed_cum);
+              date1.ext_civdef_killed_cum - previousDay.ext_civdef_killed_cum;
             const medicalPersonnelKilled =
-              (date2.med_killed_cum ?? date2.ext_med_killed_cum) -
-              (date1.med_killed_cum ?? date1.ext_med_killed_cum);
+              date1.ext_med_killed_cum - previousDay.ext_med_killed_cum;
 
             const pressKilled =
-              (date2.press_killed_cum ?? date2.ext_press_killed_cum) -
-              (date1.press_killed_cum ?? date1.ext_press_killed_cum);
+              date1.ext_press_killed_cum - previousDay.ext_press_killed_cum;
 
             let menKilled =
-              (date2.killed_cum ?? date2.ext_killed_cum) -
-              (date1.killed_cum ?? date1.ext_killed_cum) -
+              date1.ext_killed_cum -
+              previousDay.ext_killed_cum -
               womenKilled -
               childrenKilled -
               emergencyServiceMembersKilled -
@@ -113,7 +92,7 @@ const DemoEye2 = () => {
 
             if (menKilled < 0) {
               menKilled =
-                killed -
+                date1.killed -
                 womenKilled -
                 childrenKilled -
                 emergencyServiceMembersKilled -
@@ -138,11 +117,14 @@ const DemoEye2 = () => {
   };
 
   useEffect(() => {
+    console.log(womenKilled, childrenKilled, menKilled);
     generateEye();
   }, [womenKilled, childrenKilled, menKilled]);
 
   const generateEye = () => {
     const svgData = [];
+
+    console.log(womenKilled);
 
     if (womenKilled) {
       for (let i = 0; i < womenKilled; i++) {
@@ -153,8 +135,8 @@ const DemoEye2 = () => {
             x={0}
             y={0}
             key={`woman-${i}`}
-            className="eye-line woman"
-            href="#trapezium"
+            className="eye-line-2 woman"
+            href="#trapezium1"
             fill={`rgb(${random}, ${random}, ${random})`}
           />
         );
@@ -169,8 +151,8 @@ const DemoEye2 = () => {
             x={0}
             y={0}
             key={`child-${i}`}
-            className="eye-line child "
-            href="#trapezium"
+            className="eye-line-2 child "
+            href="#trapezium1"
             fill={`rgb(0, ${151 + (-10 + Math.random() * 20)}, 53)`}
           />
         );
@@ -184,46 +166,41 @@ const DemoEye2 = () => {
             id={`shape-${(womenKilled ?? 0) + (childrenKilled ?? 0) + i}`}
             x={0}
             y={0}
-            className="eye-line man"
+            className="eye-line-2 man"
             key={`man-${i}`}
-            href="#trapezium"
+            href="#trapezium1"
             fill={`rgb(${238 + (-10 + Math.random() * 20)}, 42, 52)`}
           />
         );
       }
     }
+
+    console.log(svgData);
     shuffleArray(svgData);
     setSVGdata(svgData);
   };
 
   useGSAP(
     () => {
-      gsap.set(".eye-line", {
+      gsap.set(".eye-line-2", {
         transformOrigin: "50% 130%",
         translateX: getWidth() / 2 - 156 / 2,
         y: "-50%",
         scale: 0.3,
       });
 
-      gsap.set(".eye-line.child", {
-        scale: 0.27,
-      });
-
-      gsap.fromTo(
-        ".eye-line",
-        { opacity: 0, scale: 0 },
-        { opacity: 1, scale: 0.3, duration: 0.4, ease: "bounce" }
-      );
-
       svgData.forEach((_, i) => {
         gsap.fromTo(
           `#shape-${i}`,
           {
             rotate: 0,
+            scale: 0,
           },
           {
-            duration: 5,
+            duration: 3 * Math.random() + 2,
             rotate: 360 * Math.random(),
+            scale: 0.3 + Math.random() * 0.05,
+            ease: "power3.out",
           }
         );
       });
@@ -232,7 +209,8 @@ const DemoEye2 = () => {
   );
 
   useEffect(() => {
-    getWeeklyData(weekStart);
+    console.log(day);
+    getData(day);
   }, []);
 
   return (
@@ -243,46 +221,33 @@ const DemoEye2 = () => {
     >
       <svg ref={svg} className="w-full h-96 absolute top-0 left-0">
         <defs>
-          <polygon id="trapezium" points="0 0 35.88 288 120.12 288 156 0 0 0" />
+          <polygon id="trapezium1" points="0 0 30 288 60 288 90 0 0 0" />
         </defs>
         {svgData}
       </svg>
       <div className="relative z-20 flex flex-row gap-4 p-4 items-center">
         <button
           onClick={() => {
-            setWeekStart(
-              new Date(weekStart.getTime() - 7 * 24 * 60 * 60 * 1000)
-            );
-            getWeeklyData(
-              new Date(weekStart.getTime() - 7 * 24 * 60 * 60 * 1000)
-            );
+            setDay(new Date(day.getTime() - 24 * 60 * 60 * 1000));
+            getData(new Date(day.getTime() - 24 * 60 * 60 * 1000));
           }}
           className="button"
         >
-          week --
+          day --
         </button>
         <button
           onClick={() => {
-            setWeekStart(
-              new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000)
-            );
-            getWeeklyData(
-              new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000)
-            );
+            setDay(new Date(day.getTime() + 24 * 60 * 60 * 1000));
+            getData(new Date(day.getTime() + 24 * 60 * 60 * 1000));
           }}
           className="button"
         >
-          week ++
+          day ++
         </button>
-        <span>
-          {weekStart.toLocaleDateString("nl-BE")} -{" "}
-          {new Date(
-            weekStart.getTime() + 6 * 24 * 60 * 60 * 1000
-          ).toLocaleDateString("nl-BE")}
-        </span>
+        <span>{day.toLocaleDateString("nl-BE")}</span>
       </div>
     </div>
   );
 };
 
-export default DemoEye2;
+export default DemoEye3;
