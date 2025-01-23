@@ -61,14 +61,14 @@ const DemoPattern = () => {
         },
       });
 
-      //   tl.to(
-      //     ".rect-1",
-      //     {
-      //       width: getWidth(),
-      //       duration: 200 / 2,
-      //     },
-      //     "0"
-      //   );
+      // tl.to(
+      //   ".rect-1",
+      //   {
+      //     width: getWidth(),
+      //     duration: 200 / 2,
+      //   },
+      //   "0"
+      // );
 
       squares.each((d, i, nodes) => {
         const node = nodes[i];

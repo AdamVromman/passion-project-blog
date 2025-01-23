@@ -1,0 +1,125 @@
+---
+title: My eye is opened
+description: On the train to Kortrijk, I had a epiphany.
+pubDate: 2025-01-20
+heroImage: "moving-on.webp"
+---
+
+import Demo from '../../components/Demo.astro';
+import DemoEye from '../../components/Topic/DemoEye.tsx';
+import DemoEye2 from '../../components/Topic/DemoEye2.tsx';
+
+I was just on the train to Kortrijk, and in the 4 years of Devine that has always been where I had the best ideas. I can just sit still for 30 minutes, looking out the window and something will reveal itself to me.
+
+In a flash, I saw the whole website in front of me. I was avoiding thinking of it as a dashboard, because I though that would force me to use more traditional data visualisation, but as i was staring out of the window, I realised that I could do a sort of dashboard but have the visualisation be a combination of all the ideas that I had.
+
+![drawing of my website](/my-eye-is-opened/drawing.webp)
+The idea is that the header is an eye that shows different statistics for a single day. If people died, were wounded, etc.
+
+Under that I would do a timeline of the whole history between Israel and Palestina, starting in 1917. Visitors would be able to drag certain icon's on the timeline to see how these things evolved over time.
+
+Lastly, the rest of the website would be filled with the *Keffiyeh* pattern, made up of data, somehow. That part is still the most vague.
+All this would also allow me to use certain techonologies with certain parts of the website.
+
+Okay, so I start out by getting the relevant data from [this source](https://data.techforpalestine.org/docs/casualties-daily/), who's source is the ministry of health of Palestina. I fetch the url and if the site returns a *200 OK status*, I save the data in a *React State*.
+
+```tsx
+const [data, setData] = useState<any[] | null>(null);
+
+const getData = async () => {
+    let data = await fetch(
+      "https://data.techforpalestine.org/api/v2/casualties_daily.json"
+    ).then(async (response) => {
+      if (response.ok) {
+        return await response.json();
+      }
+    });
+    setData(data);
+  };
+```
+
+This returns an Array of days, with stats for each day, for example:
+
+```json
+{
+    "report_date": "2025-01-19",
+    "report_source": "mohtel",
+    "report_period": 24,
+    "ext_massacres_cum": 4034,
+    "killed": 14,
+    "killed_cum": 46913,
+    "ext_killed": 14,
+    "ext_killed_cum": 46913,
+    "ext_killed_children_cum": 17841,
+    "ext_killed_women_cum": 12298,
+    "injured": 25,
+    "injured_cum": 110750,
+    "ext_injured": 25,
+    "ext_injured_cum": 110750,
+    "ext_civdef_killed_cum": 94,
+    "ext_med_killed_cum": 1068,
+    "ext_press_killed_cum": 204
+  }
+```
+
+Next, I wrote a function that returns a specific day,
+
+```tsx
+const [day, setDay] = useState<any | null>(null);
+
+const setSingleDay = (date: Date) => {
+    if (data) {
+      const days = data.filter((d: any) => {
+        return new Date(d.report_date).getTime() === date.getTime();
+      });
+
+      if (days) {
+        const day = days[0];
+        setDay(day);
+        console.log(day);
+        return day;
+      }
+    }
+  };
+```
+ and then I added both the people killed and injured on that day to a single array, which is then used to generate the eye.
+
+ ```tsx
+ const localDay = setSingleDay(new Date(2025, 0, 1, 1, 0));
+
+      if (localDay) {
+        const killed = new Array(localDay.killed).fill(0);
+        const injured = new Array(localDay.injured).fill(1);
+        const array = killed.concat(injured);
+        shuffleArray(array);
+
+        d3.select(svg.current).selectAll("rect").remove();
+
+        d3.select(svg.current)
+          .selectAll("rect")
+          .data(array)
+          .enter()
+          .append("rect")
+          .style("transform-origin", `center 192px`)
+          .attr("width", 20)
+          .attr("height", (_) => 100 + (Math.random() * 10 - 5))
+          .attr("x", svg.current?.clientWidth / 2 - 10)
+          .attr("y", svg.current?.clientHeight / 2 + 50)
+          .attr(
+            "transform",
+            (_, i) =>
+              `rotate(${(360 / array.length) * i + (-10 + Math.random() * 20)})`
+          )
+          .attr("fill", (type) => (type === 0 ? "red" : "black"));
+      }
+```
+
+<Demo title='Eye tests' type='GSAP'>
+<DemoEye client:only="react" />
+
+Okay, This is a good start. To not lose this code if I end up changing a lot, I am going to create a new demo and try some different things.
+
+<DemoEye2 client:only="react" />
+</Demo>
+
+In the second demo, I tried to aggragate data each week, because I thought this would make it more clear and it would make the data a bit more reliable.
