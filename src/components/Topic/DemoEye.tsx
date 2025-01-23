@@ -25,7 +25,6 @@ const DemoEye = () => {
       if (days) {
         const day = days[0];
         setDay(day);
-        console.log(day);
         return day;
       }
     }
