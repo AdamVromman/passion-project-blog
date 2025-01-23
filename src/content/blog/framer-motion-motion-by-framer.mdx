@@ -1,0 +1,162 @@
+---
+title: Framer Motion (Motion by Framer)
+description: Second on the list is Framer Motion, the 'modern animation library'.
+pubDate: 2025-01-16
+heroImage: "framer-motion.gif"
+---
+
+import Demo from "../../components/Demo.astro";
+import FirstMotionDemo from "../../components/Motion/FirstMotionDemo.tsx";
+import SecondMotionDemo from "../../components/Motion/SecondMotionDemo.tsx";
+import ThirdMotionDemo from "../../components/Motion/ThirdMotionDemo.tsx";
+
+Let's move on to *Motion* and see if we can easily recreate the demo's we did for GSAP.
+
+<Demo title="First motion Demo" type="Motion">
+<FirstMotionDemo client:only="react" />
+</Demo>
+
+I had some unexpected difficulty with this first demo. As much as I tried, I couldn't get an svg element to be animated. At times, the animated value **would** be applied to the element, but never animated. Nevertheless, I was able to get it working with a div element. I will see how I will fix this issue with the next demos.
+
+(After some more messing around, this black cube appeared in the first demo, which means that there is a way to animate an svg element. Now we just need to get there with the second demo.)
+
+<Demo title="Second motion Demo" type="Motion">
+<SecondMotionDemo client:only="react" />
+</Demo>
+
+This again took way longer than I anticipated but I got a more-or-less working example with the following code:
+
+```tsx
+const FirstMotionDemo = () => {
+  const [scope, animate] = useAnimate();
+
+  const [data, setData] = useState<any[]>([]);
+  const [localData, setLocalData] = useState<any[]>([]);
+
+  const drawSquares = (amount: number) => {
+    setLocalData(data.slice(0, Math.min(amount, data.length)));
+  };
+
+  useEffect(() => {
+    d3.csv("/organizations.csv").then((data: any) => {
+      setData(data);
+    });
+  }, []);
+
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      animate(
+        "rect",
+        { rotate: 360 },
+        {
+          duration: 2,
+          repeat: Infinity,
+          ease: "linear",
+          delay: stagger(1 / localData.length),
+        }
+      );
+    }, 500);
+
+    return () => {
+      clearTimeout(delay);
+    };
+  }, [localData]);
+
+  return (
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-4 items-start">
+        <button className="button" onClick={() => drawSquares(10)}>
+          10 squares
+        </button>
+        <button className="button" onClick={() => drawSquares(100)}>
+          100 squares
+        </button>
+        <button className="button" onClick={() => drawSquares(1000)}>
+          1.000 squares
+        </button>
+        <button className="button" onClick={() => drawSquares(10000)}>
+          10.000 squares
+        </button>
+      </div>
+      <motion.svg
+        ref={scope}
+        className="relative w-full h-96 border border-black rounded-lg opacity-1"
+      >
+        {localData.map((d, i) => (
+          <motion.rect
+            width={100}
+            height={100}
+            x={(scope.current?.clientWidth ?? 0) / 2 - 50}
+            y={50}
+            key={i}
+            style={{
+              fill: i % 2 === 0 ? "red" : "blue",
+              originX: "50%",
+              originY: "50%",
+            }}
+            initial={{ rotate: 0 }}
+            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+          ></motion.rect>
+        ))}
+      </motion.svg>
+    </div>
+  );
+};
+```
+
+I want to highlight some weird things that I need to do to get this to work. Firstly, I can't use D3. For Motion to work, I have to use a `<motion.rect>` instead of a regular `<rect>` which is incompatible with the way D3 works. They way to make this work, is to use regular tsx like this:
+
+```tsx
+{localData.map((d, i) => (
+          <motion.rect
+            width={100}
+            height={100}
+            x={(scope.current?.clientWidth ?? 0) / 2 - 50}
+            y={50}
+            key={i}
+            style={{
+              fill: i % 2 === 0 ? "red" : "blue",
+              originX: "50%",
+              originY: "50%",
+            }}
+            initial={{ rotate: 0 }}
+            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+          ></motion.rect>
+        ))}
+```
+
+But this in itself does not work yet. Then I had to program an actual `setTimeout()` of *500ms* for Motion to catch up (or at least, that is what I suspect.) 
+
+```tsx
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      animate(
+        "rect",
+        { rotate: 360 },
+        {
+          duration: 2,
+          repeat: Infinity,
+          ease: "linear",
+          delay: stagger(1 / localData.length),
+        }
+      );
+    }, 500);
+
+    return () => {
+      clearTimeout(delay);
+    };
+  }, [localData]);
+```
+
+Okay, at least the squares move now. But they are not animated correct yet, since they turn around their own center, instead of the center of the svg. When working with GSAP, I just changed the `transform-origin` of each square to `50px 150px` which means `50px` from the left and `150px` from the top. In Motion, it doesn't work like that. I have to set the `originX` and `originY` properties to `50%`, since it, apparently calculates the origin point based on the parent, and not on the node itself.
+
+I have one more problem. Right now, if you press one button and then another one, the animations will stack in a weird way. For example, if you first press 10 squares and then 100 squares, the first 10 will be animated double, but not in the way you think. It seems like the duration is stacked, so they start going slower.
+
+Let's see how I fare with the last demo.
+
+<Demo title="Third motion Demo" type="Motion">
+<ThirdMotionDemo client:only="react" />
+</Demo>
+
+Once again, problems.. The trains don't want to move..
+I had less trouble with the words than I anticipated. But the trains would not move, no matter what I tried. Since I am not really getting the hang of Motion and it doesn't seem to offer any performance benefits over GSAP, I will leave it at this for now. I might come back to this, if I find the time for it.

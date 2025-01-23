@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
-const FirstGSAPDemo = () => {
+const SecondGSAPDemo = () => {
   const [data, setData] = useState<any[]>([]);
   gsap.registerPlugin(useGSAP);
   const mainRef = useRef<HTMLDivElement | null>(null);
@@ -88,4 +88,4 @@ const FirstGSAPDemo = () => {
   );
 };
 
-export default FirstGSAPDemo;
+export default SecondGSAPDemo;

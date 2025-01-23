@@ -1,0 +1,44 @@
+.cls-1,
+.cls-2,
+.cls-3 {
+  fill: none;
+}
+
+.cls-1,
+.cls-2,
+.cls-3,
+.cls-4,
+.cls-5,
+.cls-6,
+.cls-7 {
+  stroke: red;
+}
+
+.cls-1,
+.cls-3,
+.cls-4,
+.cls-5,
+.cls-7 {
+  stroke-linejoin: round;
+}
+
+.cls-2,
+.cls-6 {
+  stroke-miterlimit: 10;
+}
+
+.cls-3,
+.cls-7 {
+  stroke-linecap: round;
+}
+
+.cls-4,
+.cls-8 {
+  fill: red;
+}
+
+.cls-5,
+.cls-6,
+.cls-7 {
+  fill: lime;
+}
