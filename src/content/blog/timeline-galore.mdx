@@ -1,0 +1,322 @@
+---
+title: Timeline galore
+description: Today, I do a deep dive into D3 zooming, CSS transforms and SVG animations.
+pubDate: 2025-01-30
+heroImage: "zooming-timeline.gif"
+---
+
+
+Okay, first things first, I realised, the way I was constructing my TimelineData, was a bit silly, so I am going to refactor that into something a bit more sensible, while also adding all of the years from 1917 to 2025.
+
+```typescript
+export enum Source {
+  OCHA = "OCHA",
+  BTSELEM = "B'Tselem",
+  CBS = "Israel Central Bureau of Statistics",
+  AL_JAZEERA = "Al Jazeera",
+  UNHCR = "UNHCR",
+}
+
+export interface Event {
+  name: string;
+  arabicName: string;
+  description: string;
+  date: Date;
+  endDate?: Date;
+  location: string;
+  link: string;
+  source: Source;
+  image: string;
+}
+
+interface dataNumber {
+  number: number;
+  source: Source;
+}
+
+export interface TimelineYear {
+  year: number;
+  events?: Event[];
+  adultsKilled?: dataNumber;
+  adultsImprisoned?: dataNumber;
+  minorsKilled?: dataNumber;
+  minorsImprisoned?: dataNumber;
+  adultsInjured?: dataNumber;
+  minorsInjured?: dataNumber;
+  illegalSettlers?: dataNumber;
+  buildingsDemolished?: dataNumber;
+  palestiniansDisplaced?: dataNumber;
+  percentageOfPalestinianLandStolen?: dataNumber;
+}
+
+export const timeline: TimelineYear[] = [
+  { year: 1917 },
+  { year: 1918 },
+  { year: 1919 },
+  { year: 1920 },
+  { year: 1921 },
+  { year: 1922 },
+  { year: 1923 },
+  { year: 1924 },
+  { year: 1925 },
+  { year: 1926 },
+  { year: 1927 },
+  { year: 1928 },
+  { year: 1929 },
+  { year: 1930 },
+  { year: 1931 },
+  { year: 1932 },
+  { year: 1933 },
+  { year: 1934 },
+  { year: 1935 },
+  { year: 1936 },
+  { year: 1937 },
+  { year: 1938 },
+  { year: 1939 },
+  { year: 1940 },
+  { year: 1941 },
+  { year: 1942 },
+  { year: 1943 },
+  { year: 1944 },
+  { year: 1945 },
+  { year: 1946 },
+  { year: 1947 },
+  { year: 1948 },
+  { year: 1949 },
+  { year: 1950 },
+  { year: 1951 },
+  { year: 1952 },
+  { year: 1953 },
+  { year: 1954 },
+  { year: 1955 },
+  { year: 1956 },
+  { year: 1957 },
+  { year: 1958 },
+  { year: 1959 },
+  { year: 1960 },
+  { year: 1961 },
+  { year: 1962 },
+  { year: 1963 },
+  { year: 1964 },
+  { year: 1965 },
+  { year: 1966 },
+  { year: 1967 },
+  { year: 1968 },
+  { year: 1969 },
+  { year: 1970 },
+  { year: 1971 },
+  { year: 1972 },
+  { year: 1973 },
+  { year: 1974 },
+  { year: 1975 },
+  { year: 1976 },
+  { year: 1977 },
+  { year: 1978 },
+  { year: 1979 },
+  { year: 1980 },
+  { year: 1981 },
+  { year: 1982 },
+  { year: 1983 },
+  { year: 1984 },
+  { year: 1985 },
+  { year: 1986 },
+  { year: 1987 },
+  { year: 1988 },
+  { year: 1989 },
+  { year: 1990 },
+  { year: 1991 },
+  { year: 1992 },
+  { year: 1993 },
+  { year: 1994 },
+  { year: 1995 },
+  { year: 1996 },
+  { year: 1997 },
+  { year: 1998 },
+  { year: 1999 },
+  { year: 2000 },
+  { year: 2001 },
+  { year: 2002 },
+  { year: 2003 },
+  { year: 2004 },
+  { year: 2005 },
+  { year: 2006 },
+  { year: 2007 },
+  {
+    year: 2008,
+    adultsKilled: { number: 526, source: Source.OCHA },
+    minorsKilled: { number: 345, source: Source.OCHA },
+    adultsInjured: { number: 1536, source: Source.OCHA },
+    minorsInjured: { number: 556, source: Source.OCHA },
+    minorsImprisoned: { number: 379, source: Source.BTSELEM },
+    adultsImprisoned: { number: 7952, source: Source.BTSELEM },
+    illegalSettlers: { number: 496032, source: Source.CBS },
+    percentageOfPalestinianLandStolen: {
+      number: 90,
+      source: Source.AL_JAZEERA,
+    },
+    palestiniansDisplaced: { number: 342657, source: Source.UNHCR },
+    buildingsDemolished: { number: 84, source: Source.BTSELEM },
+  },
+  {
+    year: 2009,
+    adultsKilled: { number: 1482, source: Source.OCHA },
+    minorsKilled: { number: 433, source: Source.OCHA },
+    adultsInjured: { number: 5768, source: Source.OCHA },
+    minorsInjured: { number: 2629, source: Source.OCHA },
+    minorsImprisoned: { number: 299, source: Source.BTSELEM },
+    adultsImprisoned: { number: 6842, source: Source.BTSELEM },
+    illegalSettlers: { number: 514643, source: Source.CBS },
+    percentageOfPalestinianLandStolen: {
+      number: 90,
+      source: Source.AL_JAZEERA,
+    },
+    palestiniansDisplaced: { number: 342657, source: Source.UNHCR },
+    buildingsDemolished: { number: 31, source: Source.BTSELEM },
+  },
+  {
+    year: 2010,
+  },
+  {
+    year: 2011,
+  },
+  {
+    year: 2012,
+  },
+  {
+    year: 2013,
+  },
+  {
+    year: 2014,
+  },
+  {
+    year: 2015,
+  },
+  {
+    year: 2016,
+  },
+  {
+    year: 2017,
+  },
+  {
+    year: 2018,
+  },
+  {
+    year: 2019,
+  },
+  {
+    year: 2020,
+  },
+  {
+    year: 2021,
+  },
+  {
+    year: 2022,
+  },
+  {
+    year: 2023,
+  },
+  {
+    year: 2024,
+  },
+  {
+    year: 2025,
+  },
+];
+
+```
+
+What changed is that I have included the year as a property, instead of a key and that I have put all of these objects into an array, instead of an object. The reason is that I will always need to map the whole array, and rarely need a single year.
+
+With all the years added (even if they don't have data), I want to try to get a timeline going, where I can zoom in an out of. I am going to try to use D3 as much as possible, which is going to make my life easier, when I am working with actual data.
+
+To make the actual timeline, is not that hard. 
+
+```typescript
+const drawTimeline = () => {
+    const x = d3
+      .scaleBand()
+      .domain(
+        timeline.sort((a, b) => a.year - b.year).map((d) => d.year.toString())
+      )
+      .range([PADDING.left, getDimensions().width - PADDING.right]);
+    d3.select(graphRef.current)
+      .select("#group-timeline")
+      .append("g")
+      .attr("class", "stroke-4")
+      .attr("transform", `translate(0, ${HEIGHT_TIMELINE / 2})`)
+      .call(d3.axisBottom(x))
+      .selectAll("text")
+      .attr("transform", `translate(0, -${HEIGHT_TIMELINE / 4})`)
+      .attr("class", "text-2xl font-bold");
+  };
+```
+
+In order, I first create an x-axis, give it a domain and a range, select my graph, add a group to it, give it a stroke, translate it to center, add the axis to it, select the text, translate that up and give it a class.
+
+Now I want this timeline to grow and shrink with a window resize. That, too, is not too hard. You can just redo certain steps, and animate the difference, like so:
+
+```typescript
+const resize = () => {
+    const x = d3
+      .scaleBand()
+      .domain(
+        timeline.sort((a, b) => a.year - b.year).map((d) => d.year.toString())
+      )
+      .range([PADDING.left, getDimensions().width - PADDING.right]);
+    d3.select(graphRef.current)
+      .select("#group-timeline")
+      .append("g")
+      .attr("class", "stroke-4")
+      .attr("transform", `translate(0, ${HEIGHT_TIMELINE / 2})`)
+      .call(d3.axisBottom(x))
+      .selectAll("text")
+      .attr("transform", `translate(0, -${HEIGHT_TIMELINE / 4})`)
+      .attr("class", "text-2xl font-bold");
+
+    d3.select(graphRef.current)
+        .select("#group-timeline")
+        .select("g")
+        .transition()
+        .call(d3.axisBottom(x));
+    };
+```
+
+Now, I want to make this more efficient, by saving that x-axis for example.
+
+Actually, I am going to change my approach. I find that the axisBottom function of D3 adds a bit too much styling to my ticks, so I am going to try and build them from scratch instead. 
+
+```typescript
+const drawTimeline = () => {
+
+    const tickWidth =
+      (getDimensions().width - PADDING.left - PADDING.right) / timeline.length;
+
+    const groups = d3
+      .select(graphRef.current)
+      .select("#group-timeline")
+      .selectAll("g.tick")
+      .data(timeline)
+      .enter()
+      .append("g")
+      .attr("class", "tick");
+
+    groups
+      .append("text")
+      .attr("x", (d, i) => PADDING.left + i * tickWidth)
+      .attr("y", HEIGHT_TIMELINE / 4)
+      .text((d) => d.year)
+      .attr("text-anchor", "middle");
+
+    groups
+      .append("line")
+      .attr("x1", (d, i) => PADDING.left + i * tickWidth)
+      .attr("x2", (d, i) => PADDING.left + i * tickWidth)
+      .attr("y1", HEIGHT_TIMELINE / 2)
+      .attr("y2", HEIGHT_TIMELINE)
+      .attr("class", "stroke-4 stroke-BLACK");
+  };
+```
+
+With this new approach, I have much more control over each tick, and for example—somthing I want to implement later—I can have certain years disappear when I zoom out.
+
+Now I want to be able to zoom as well.
