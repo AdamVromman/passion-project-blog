@@ -8,3 +8,150 @@ heroImage: "timeline.webp"
 I am immediatly going against my title, because I am not actually starting with the timeline just yet. I want to develop the eye a bit more, before I move on. My plan is not to finish it today, but to have it done in a broad sense. For now, the eye only displays the people killed in Gaza on a certain day. I want to add to that the people that were injured in Gaza and the people that were killed and injured in the West Bank. 
 
 I also have two `setTimeout()`'s that I want to convert into one. Basically, I need a small timeout to make sure that the animation of the eye opening and closing can actually happen and secondly I need a small timeout for all the parts of the iris to be generated, before I start animating them. If the animation starts too soon, the elements don't exist yet and GSAP complains.
+
+After reviewing, I notice that the problem is not that the elements don't exist yet, the problem is that I have two async functions to get the Gaza and West Bank Data. The problem is that both functions can trigger the eye to open and the lines to animate. So, after the Gaza data is retrieved, the eye opens and the lines are animated, but of course, the data from the West Bank is not yet retrieved. The only thing I needed to do was to only alert the Eye, when both have been retrieved, like this:
+
+```typescript
+
+//Get data from both sources when the selected day changes
+useEffect(() => {
+    getDataGaza(day);
+    getDataWestBank(day);
+  }, [day]);
+
+
+  useEffect(() => {
+
+    //Check if both have been retrieved before setting dailyData, which in turns triggers the eye to openy
+    if (
+      dataGaza &&
+      dataWestBank &&
+      dataGaza.report_date === dataWestBank.report_date
+    ) {
+      if (dataWestBank.verified) {
+        setDailyData(() => {
+          return {
+            gazaInjured: dataGaza.injured,
+            gazaKilled: dataGaza.killed,
+            westBankInjured: dataWestBank.verified.injured,
+            westBankKilled: dataWestBank.verified.killed,
+          };
+        });
+      } else {
+        if (dataWestBankPrevious) {
+          setDailyData(() => {
+            return {
+              gazaInjured: dataGaza.injured,
+              gazaKilled: dataGaza.killed,
+              westBankInjured:
+                dataWestBank.injured_cum - dataWestBankPrevious.injured_cum,
+              westBankKilled:
+                dataWestBank.killed_cum - dataWestBankPrevious.killed_cum,
+            };
+          });
+        }
+      }
+    }
+  }, [dataGaza, dataWestBank, dataWestBankPrevious]);
+```
+
+
+With this done, I can finally move on to the timeline. I am going to start by defining an object that just holds all of the years of the history of Palestina and Israel, starting with 1917.
+
+```typescript
+
+//Define the most used sources
+export enum Source {
+  OCHA = "OCHA",
+  BTSELEM = "B'Tselem",
+  CBS = "Israel Central Bureau of Statistics",
+  AL_JAZEERA = "Al Jazeera",
+  UNHCR = "UNHCR",
+}
+
+//Define an Event Interface
+export interface Event {
+  name: string;
+  arabicName: string;
+  description: string;
+  date: Date;
+  endDate?: Date;
+  location: string;
+  link: string;
+  source: Source;
+  image: string;
+}
+
+//Define a dataNumber Interface which holds a number and the source of that number
+interface dataNumber {
+  number: number;
+  source: Source;
+}
+
+//Define the Timeline Data Interface
+export interface TimelineData {
+  [year: number]: {
+    events?: Event[];
+    adultsKilled: dataNumber;
+    adultsImprisoned: dataNumber;
+    minorsKilled: dataNumber;
+    minorsImprisoned: dataNumber;
+    adultsInjured: dataNumber;
+    minorsInjured: dataNumber;
+    illegalSettlers: dataNumber;
+    buildingsDemolished: dataNumber;
+    palestiniansDisplaced: dataNumber;
+    percentageOfPalestinianLandStolen: dataNumber;
+  };
+}
+
+//Define the timeline data
+export const timeline: TimelineData = {
+  2008: {
+    adultsKilled: { number: 526, source: Source.OCHA },
+    minorsKilled: { number: 345, source: Source.OCHA },
+    adultsInjured: { number: 1536, source: Source.OCHA },
+    minorsInjured: { number: 556, source: Source.OCHA },
+    minorsImprisoned: { number: 379, source: Source.BTSELEM },
+    adultsImprisoned: { number: 7952, source: Source.BTSELEM },
+    illegalSettlers: { number: 496032, source: Source.CBS },
+    percentageOfPalestinianLandStolen: {
+      number: 90,
+      source: Source.AL_JAZEERA,
+    },
+    palestiniansDisplaced: { number: 342657, source: Source.UNHCR },
+    buildingsDemolished: { number: 84, source: Source.BTSELEM },
+  },
+  2009: {
+    adultsKilled: { number: 1482, source: Source.OCHA },
+    minorsKilled: { number: 433, source: Source.OCHA },
+    adultsInjured: { number: 5768, source: Source.OCHA },
+    minorsInjured: { number: 2629, source: Source.OCHA },
+    minorsImprisoned: { number: 299, source: Source.BTSELEM },
+    adultsImprisoned: { number: 6842, source: Source.BTSELEM },
+    illegalSettlers: { number: 514643, source: Source.CBS },
+    percentageOfPalestinianLandStolen: {
+      number: 90,
+      source: Source.AL_JAZEERA,
+    },
+    palestiniansDisplaced: { number: 342657, source: Source.UNHCR },
+    buildingsDemolished: { number: 31, source: Source.BTSELEM },
+  },
+};
+```
+
+The last thing I am doing for today is just to create a Timeline component.
+
+```typescript
+
+import { useEffect } from "react";
+const Timeline = () => {
+  useEffect(() => {}, []);
+  return (
+    <div className="timeline-section">
+      <svg></svg>
+    </div>
+  );
+};
+export default Timeline;
+```
