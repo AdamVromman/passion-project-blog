@@ -10,25 +10,25 @@ import Source from '../../components/Source.astro'
 Here we are. The official start of the last project of Devine, discounting my internship. I am ready to make it something special, starting with my topic.
 My research question is as follows:
 
-### How can we use web-based animation frameworks to help visualise data in meaningful ways?
+### How can we use web-based animation frameworks to help visualize data in meaningful ways?
 
 I'll go over each part of this question and explain what it means for me.
 
-1. When I say web-based animation frameworks, I am talking about libraries like **D3.js**, **Cavalry** and **GSAP**. I want to research and compare these and see how each one can be used to visualise (large amounts of) data.
-2. Data visualisation for me means to take a lot of points of data and crafting a story or narrative out of it. Sometimes these individual points don't mean much on their own and sometimes they are deeply intimate and personal. I am interested in both.
-3. Lastly, I need it to be meaningful. By this, I mean that it needs to be valuable for a cause that I believe in. Data visualisation can be a strong tool and can be used to misrepresent data in significant ways. I, of course, want to avoid that.
+1. When I say web-based animation frameworks, I am talking about libraries like **D3.js**, **Cavalry** and **GSAP**. I want to research and compare these and see how each one can be used to visualize (large amounts of) data.
+2. Data visualization for me means to take a lot of points of data and crafting a story or narrative out of it. Sometimes these individual points don't mean much on their own and sometimes they are deeply intimate and personal. I am interested in both.
+3. Lastly, I need it to be meaningful. By this, I mean that it needs to be valuable for a cause that I believe in. Data visualization can be a strong tool and can be used to misrepresent data in significant ways. I, of course, want to avoid that.
 
 The project will consist of three parts:
 
 1. Researching the animation frameworks.
-2. choosing a specific framework and do in-depth data visualisation testing with it.
+2. choosing a specific framework and do in-depth data visualization testing with it.
 3. Create a demo site about a specific topic.
 
 As you can see, in the last step, I will create a demo site using all of the things that I learned. The topic of this site will be **the ongoing genocide in Gaza** and **the occupation of Palestinian land**. This is a serious and deeply political topic, which is something we are not used to work with in Devine, but I want my last project at Devine to reflect the things that are important to me.
 
 I acknowledge that this is not an easy topic to work with and there is a lot of misinformation and controversy surrounding it. Therefore, I want to start by presenting some facts and resources about the topic.
 
-1. Israel illegally occupies Palestinian (and neigbouring countries') territories. <Source name="Ronen" year="2008" APA="Ronen, Y. (2008). Illegal occupation and its consequences. Israel Law Review, 41(1–2), 201–245. https://doi.org/10.1017/s0021223700000224" link="https://doi.org/10.1017/s0021223700000224" />
+1. Israel illegally occupies Palestinian (and neighboring countries') territories. <Source name="Ronen" year="2008" APA="Ronen, Y. (2008). Illegal occupation and its consequences. Israel Law Review, 41(1–2), 201–245. https://doi.org/10.1017/s0021223700000224" link="https://doi.org/10.1017/s0021223700000224" />
 2. In 1948, Israel forced 750.000 Palestinians to flee their homes in a campaign later known as *the Nakba* (The catastrophe). <Source name="Natour" year={2015} APA="Natour, G. (2015). The Nakba—Flight and expulsion of the Palestinians in 1948. In Springer eBooks (pp. 81–104). https://doi.org/10.1007/978-3-319-20846-6_5" link="https://doi.org/10.1007/978-3-319-20846-6_5" />
 3. Israel has committed three acts of genocide with the requisite intent. <Source name='Albanese' year="2024" APA="Albanese, F. (2024). Report of the Special Rapporteur on the situation of human rights in the Palestinian territories occupied since 1967. https://www.ohchr.org/sites/default/files/documents/hrbodies/hrcouncil/sessions-regular/session55/advance-versions/a-hrc-55-73-auv.pdf" link='https://www.ohchr.org/sites/default/files/documents/hrbodies/hrcouncil/sessions-regular/session55/advance-versions/a-hrc-55-73-auv.pdf' />
 
@@ -49,29 +49,29 @@ The frameworks that I want to research are the following:
 3. **Cavalry**
 4. **Rive**
 
-But before I start with these four, I want to read up about **D3.js**, which is a data visualisation library. I want to check if it has built in animation capabilities and if not, whether it can be used with any of the aforementioned libraries.
+But before I start with these four, I want to read up about **D3.js**, which is a data visualization library. I want to check if it has built in animation capabilities and if not, whether it can be used with any of the aforementioned libraries.
 
-Apart from that, I need to give myself, and you, an idea of what exactly I am imaginging when I say animated data visualisation. A good reference is the work of Italian artist [Federica Fragapane](https://www.behance.net/FedericaFragapane), but then animated. The following images are works of her that I find particularly interesting:
+Apart from that, I need to give myself, and you, an idea of what exactly I am imagining when I say animated data visualization. A good reference is the work of Italian artist [Federica Fragapane](https://www.behance.net/FedericaFragapane), but then animated. The following images are works of her that I find particularly interesting:
 
 <div class="flex flex-row gap-4">
 
-![Data viz showing a line made of green dots, eacht dot representing 1 person per square kilometer in the city of Rafah in Gaza in October 2023. There is lots of space for the line](/getting-the-show-on-the-road/rafah-1.png)
+![Data viz showing a line made of green dots, each dot representing 1 person per square kilometer in the city of Rafah in Gaza in October 2023. There is lots of space for the line](/getting-the-show-on-the-road/rafah-1.png)
 
-![Data viz showing a line made of green dots, eacht dot representing 1 person per square kilometer in the city of Rafah in Gaza in December 2023. The line has increased in length.](/getting-the-show-on-the-road/rafah-2.png)
+![Data viz showing a line made of green dots, each dot representing 1 person per square kilometer in the city of Rafah in Gaza in December 2023. The line has increased in length.](/getting-the-show-on-the-road/rafah-2.png)
 
-![Data viz showing a line made of green dots, eacht dot representing 1 person per square kilometer in the city of Rafah in Gaza in February 2024. The lines now takes up the whole screen](/getting-the-show-on-the-road/rafah-3.png)
+![Data viz showing a line made of green dots, each dot representing 1 person per square kilometer in the city of Rafah in Gaza in February 2024. The lines now takes up the whole screen](/getting-the-show-on-the-road/rafah-3.png)
 
 </div>
 
-[Here](https://www.behance.net/gallery/207824389/Gaza), she visualises the rapidly increasing population density in the city of Rafah, due to the amount of people fleeing.
+[Here](https://www.behance.net/gallery/207824389/Gaza), she visualizes the rapidly increasing population density in the city of Rafah, due to the amount of people fleeing.
 
 ![Data viz showing the title 'how Europeans think and feel about immigration' and a bunch of small hills and dots above the hills. No further context](/getting-the-show-on-the-road/hearts-and-minds.png)
 
 [This one](https://www.behance.net/gallery/133409063/Hearts-and-minds) is the cover art of a study about how Europeans feel about immigration.
 
-While I am looking over Fragapane's work, I noticed that she has [two courses](https://www.domestika.org/en/federica_fragapane) on data visualisation. This is great news and I will definitely check them out!
+While I am looking over Fragapane's work, I noticed that she has [two courses](https://www.domestika.org/en/federica_fragapane) on data visualization. This is great news and I will definitely check them out!
 
-Before I start with my *D3.js* research, I want to summarise a planning that I can then copy to the timeline on the homepage.
+Before I start with my *D3.js* research, I want to summarize a planning that I can then copy to the timeline on the homepage.
 
 1. **Research**
     - D3.js (2 days)
