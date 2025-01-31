@@ -320,3 +320,171 @@ const drawTimeline = () => {
 With this new approach, I have much more control over each tick, and for example—somthing I want to implement later—I can have certain years disappear when I zoom out.
 
 Now I want to be able to zoom as well.
+
+The first thing I am going to try is to zoom by using the D3 zoom function as I used it in my demo's.
+
+
+```typescript
+const handleZoom = (e: any) => {
+
+      d3.select(graphRef.current)
+        .select("#zoomable")
+        .attr("transform", e.transform);
+    };
+
+    const zoomFunction = d3
+      .zoom()
+      .on("zoom", handleZoom)
+      .scaleExtent([1, 10])
+      .translateExtent([
+        [0, 0],
+        [getDimensions().width, getDimensions().height],
+      ]);
+
+    d3.select(graphRef.current).call(zoomFunction);
+```
+
+As I showed in the demo, what happens is that the transform from the Event gets applied directly to the `<g id="zoomable" />`-element.
+The results are ... interesting:
+
+![Timeline zooming in all wrong](/timeline-galore/timeline-1.gif)
+
+What I need to do is to restrict the transformation and scaling to the x-axis only. So instead of applying the transformation directly, I need to do some calculations first.
+
+```typescript
+    const handleZoom = (e: any) => {
+      console.log(e.transform);
+
+      d3.select(graphRef.current)
+        .select("#zoomable")
+        .attr("transform", `scale(${e.transform.k}, 1)`);
+    };
+```
+
+Like this, I am only scaling on the x-axis, while the y-axis remains 1 all the time. Let's see how this goes:
+
+![Timeline zooming in all wrong](/timeline-galore/timeline-2.gif)
+
+I mean.. It's some kind of progress right?
+
+I should offset the scaling applied on the whole <g id="zoomable" />-element on the individual tick level. The problem is that each tick is a group, so it does not have its own x- and y-coordinates. And if I offset the scaling on the text and lines, the zooming doesn't work anymore, since those are the elements that are being scaled in the first place.
+
+To solve this, I am going to add each text and line to an inner `<svg />`-element, which can have its own scaling and coordinates.
+
+```typescript
+const drawTimeline = () => {
+    const tickWidth =
+      (getDimensions().width - PADDING.left - PADDING.right) / timeline.length;
+
+    const groups = d3
+      .select(graphRef.current)
+      .select("#group-timeline")
+      .selectAll("svg.tick")
+      .data(timeline)
+      .enter()
+      .append("svg")
+      .attr("x", (_, i) => PADDING.left + i * tickWidth)
+      .attr("opacity", 0)
+      .attr("class", "tick");
+
+    groups
+      .append("text")
+      .attr("class", "unzoom")
+      .text((d) => d.year)
+      .attr("width", 100)
+      .attr("y", HEIGHT_TIMELINE / 4)
+      .attr("x", 25)
+      .attr("text-anchor", "middle");
+
+    groups
+      .append("line")
+      .attr("x1", 25)
+      .attr("x2", 25)
+      .attr("y1", HEIGHT_TIMELINE / 2)
+      .attr("y2", HEIGHT_TIMELINE)
+      .attr("class", "stroke-4 stroke-BLACK unzoom");
+
+    const handleZoom = (e: any) => {
+      const zoomLevel = e.transform.k;
+
+      d3.select(graphRef.current)
+        .select("#zoomable")
+        .attr(
+          "transform",
+          `translate(${e.transform.x}, 0) scale(${zoomLevel}, 1)`
+        );
+
+      d3.select(graphRef.current)
+        .selectAll(".unzoom")
+        .attr("transform", `scale(${1 / zoomLevel}, 1)`);
+    };
+
+   //[...]
+  };
+```
+
+Now I am able to add a an `.unzoom`-class to the text and lines and offset the scaling applied to the whole `<g id="zoomable" />`-element on the individual tick level. This is already much closer to what I want:
+
+![Timeline zooming in all wrong](/timeline-galore/timeline-3.gif)
+
+But as you can see, when zoomed out completely, the years become unreadable. I am going to implement a system where on zoom level 10, only the first, last and every 10th year is shown, on zoom level 2 and above, every fifth year is shown, and on zoom level 6 and above, every year is shown.
+
+```typescript
+const drawTimeline = () => {
+    //[...]
+
+    const groups = d3
+      .select(graphRef.current)
+      .select("#group-timeline")
+      .selectAll("svg.tick")
+      .data(timeline)
+      .enter()
+      .append("svg")
+      .attr("x", (_, i) => PADDING.left + i * tickWidth)
+      .attr("y", (d, i) =>
+        i === 0 || i === timeline.length - 1 || d.year % 10 === 0 ? 0 : 50
+      )
+      .attr("class", (d, i) => {
+        let className = "tick";
+
+        if (i === 0 || i === timeline.length - 1 || d.year % 10 === 0)
+          className += " always-show";
+        else if (d.year % 5 === 0) className += " lustrum";
+        else className += " regular";
+
+        return className;
+      });
+      //[...]
+
+    const handleZoom = (e: any) => {
+      const zoomLevel = e.transform.k;
+
+      //TODO: ANIMATE ZOOM
+      d3.select(graphRef.current).selectAll(".decade").attr("y", 0);
+      d3.select(graphRef.current).selectAll(".always-show").attr("y", 0);
+
+      if (zoomLevel > 6) {
+        d3.select(graphRef.current).selectAll(".regular").attr("y", 0);
+      } else {
+        d3.select(graphRef.current).selectAll(".regular").attr("y", 50);
+      }
+
+      if (zoomLevel > 2) {
+        d3.select(graphRef.current).selectAll(".lustrum").attr("y", 0);
+      } else {
+        d3.select(graphRef.current).selectAll(".lustrum").attr("y", 50);
+      }
+
+      //[...]
+  };
+  ```
+
+  In the code above, I am giving each tick a class dependant on whether its the first or last year in my timeline or a decade, a lustrum or a regular year. When zooming, I assign different attributes dependant on both the zoom level and the classes. The result is already approaching what I am looking for.
+
+  ![Timeline correctly adding and hiding years dependant on zoom level](/timeline-galore/timeline-4.gif)
+
+  Let's add some animations!
+
+    ![Timeline animated but something is off](/timeline-galore/timeline-5.gif)
+
+    Something weird is going on. What I suspect is that changing the y-attribute of the lines with GSAP is interfering with the scaling when zooming. Let's see what can be done about that. Tomorrow.
