@@ -1,0 +1,83 @@
+---
+title: Adding Real Data
+description: Today I looked at horrifying data all day.
+pubDate: 2025-02-02
+heroImage: "data-day.jpeg"
+---
+
+import Source from '../../components/Source.astro';
+
+I have planned to mostly add data today, but I want to fix some thing with the timeline first.
+
+Right now, the data gets animated on every tick, while zooming or panning. This is a lot of resources and it's not necessary, The data should only be animated when the data changes or when a certain zoom threshold is crossed. To fix this, I started by adding two constants,
+
+```tsx
+const LUSTRUM_ZOOM = 2;
+const REGULAR_ZOOM = 6;
+```
+
+which indicate when a certain year should be made visible or invisible.
+
+Next, I added another state, called `zoomLevelFloored` and a `useEffect` that updates this state when the zoom level changes. This state is then used to determine if the data should be animated or not.
+
+```tsx
+const handleZoom = (e: any) => {
+    const zoom = e.transform.k;
+
+    // [...]
+    setZoomLevelFloored(() => Math.floor(zoom));
+
+    // [...]
+}
+
+useEffect(() => {
+    if (zoomLevelFloored >= LUSTRUM_ZOOM) {
+      animateLustra();
+      animateData(false);
+    } else {
+      reverseLustra();
+      reverseData();
+    }
+    if (zoomLevelFloored >= REGULAR_ZOOM) {
+      animateRegular();
+      animateData(false);
+    } else {
+      reverseRegular();
+      reverseData();
+    }
+  }, [zoomLevelFloored]);
+```
+
+Within the handleZoom function, I set the zoomLevelFloored to the floored value of the zoom level. This way, the `useEffect()` attached to this value, only fires when the value changes from 1 to 2 for example, instead of from 1.12434 to 1.12435.
+
+After that, I also added a function to determine the highest values of each data type, since they are needed to determine the height of the circles. One thing I will have to fix in the future is that I should be the max value of all the visible data types combined, instead of the max value of each data type separately. But those are worries for later.
+
+```tsx
+
+const getMaxValues = () => {
+    const values = new Map<SelectableDataType, number>();
+    selectedData.forEach((data) => {
+      const max = d3.max(timeline, (d) => d[data]?.number ?? 0) ?? 0;
+      const digits = Math.floor(Math.log10(max) + 1);
+      const powerNumber = Math.max(Math.pow(10, digits - 2), 1);
+      const ceiled = Math.ceil(max / powerNumber) * powerNumber;
+      values.set(data, ceiled);
+    });
+    return values;
+  };
+
+```
+
+I also change the value a bit, so it's rounded up dynamically. For example, 23014 will be rounded up to 24000, but 16 would be rounded up to 20.
+
+---
+
+For the rest of the day, I set out to fill in data. I quickly noticed that some years and some types of data would be easier than others, with some being completely impossible. For example, to find how many adults were injured in any year before 2000. I also realized that this is of course all part of the campaign against Palestinians. Data like this is often intentionally hidden, destroyed or not collected. Any sources from within, like hospitals or the Gaza ministry of health, are constantly called into question, not believed or targets of attacks <Source name="Mohammed Majed" link="https://www.aa.com.tr/en/middle-east/-israel-destroyed-central-archives-of-gaza-city-head-of-gaza-municipality/3068555" year={2023} APA='‘Israel destroyed Central Archives of Gaza City’: Head of Gaza municipality. (2023). https://www.aa.com.tr/en/middle-east/-israel-destroyed-central-archives-of-gaza-city-head-of-gaza-municipality/3068555' /> <Source year={2024} name="Staff, A. J." link='https://www.aljazeera.com/news/2024/12/31/gaza-hospitals-on-brink-of-total-collapse-from-israel-attacks-un' APA="Staff, A. J. (2024, December 31). Gaza hospitals on ‘brink of total collapse’ from Israel attacks: UN. Al Jazeera. https://www.aljazeera.com/news/2024/12/31/gaza-hospitals-on-brink-of-total-collapse-from-israel-attacks-un" />.
+
+Therefor, I believe that it will be important to mention all of this and to find a good way to show the missing or incomplete data. I will have to think about this more in the future.
+
+Apart from that, it is just absolutely depressing and enraging to look up data about so much misery, abuse and death. With every day that passes, I feel more motivated to create this website and to put in every thing that I can. Here are some points of data that got to me:
+
+- In 2004, more than 1500 buildings were completely destroyed on the pretext of unlawful construction, because of alleged military purposes or simply as an act of punishment <Source link='https://statistics.btselem.org/en/demolitions/demolition-as-punishment?structureSensor=%5B%22residential%22,%22non-residential%22%5D&tab=overview' name="B'Tselem" APA="B'Tselem., (2024). House Demolitions. https://statistics.btselem.org/en/demolitions/demolition-as-punishment?structureSensor=%5B%22residential%22,%22non-residential%22%5D&tab=overview" year={2024} />.
+- In 1982, more than 3,000 people were killed when an IDF-backed militia infiltrated the Sabra and Shatila refugee camps in Lebanon. The IDF had surrounded the camps and allowed the militia to enter, and prevented anyone from leaving the area <Source year={2022} link='https://www.aljazeera.com/news/2022/9/16/sabra-and-shatila-massacre-40-years-on-explainer' APA='Staff, A. J. (2022, September 16). Sabra and Shatila massacre: What happened in Lebanon in 1982? Al Jazeera. https://www.aljazeera.com/news/2022/9/16/sabra-and-shatila-massacre-40-years-on-explainer' name='Staff, A. J.'/>.
+
