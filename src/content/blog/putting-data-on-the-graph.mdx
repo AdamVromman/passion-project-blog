@@ -1,0 +1,137 @@
+---
+title: Putting Data on the Graph
+description: After tinkering with the timeline, I'm going to start adding data to the graph.
+pubDate: 2025-02-01
+heroImage: "changing-data.gif"
+---
+
+Alright, so with a working, zoomable, panable graph, I am going to continue and put some actual data on it.
+
+I created a new function called `createData()`. For now, I am going to work with just one datatype, being Adults Killed (per year).
+The first thing I need are the max height for any datapoint in pixels and the highest datapoint in the dataset.
+
+```tsx
+    const maxHeight = getDimensions().height - HEIGHT_TIMELINE - PADDING.bottom;
+    const maxKilled = d3.max(timeline, (d) => d.adultsKilled?.number ?? 0);
+```
+
+Next, I store a D3.js selection in a variable, so I don't have to do html lookups every time.
+
+```tsx
+    const data = svg.selectAll(".data").data(timeline);
+
+    const groups = d3
+      .select(graphRef.current)
+      .select("#group-timeline")
+      .selectAll("svg.tick");
+```
+
+Lastly, for every datapoint, I add a circle and give it some properties, some generic, some based on the data.
+
+```tsx
+groups
+      .append("circle")
+      .attr("id", (d) => `data-${d.year}`)
+      .attr("cx", 25)
+      .attr(
+        "cy",
+        (d) =>
+          getDimensions().height -
+          PADDING.bottom -
+          ((d?.adultsKilled?.number ?? Math.random() * maxKilled) / maxKilled) *
+            maxHeight
+      )
+      .attr("r", 5)
+      .attr("class", "tick-data unzoom")
+      .attr("fill", "red");
+```
+
+You might notice the `Math.random()`. I am just using this so that every year has a datapoint, even if I haven't filled in all the data yet.
+Also important, is giving these circles the `unzoom` class, so they zoom doesn't distort them.
+
+After calling the `createData()` function, this is the result:
+
+![timeline with data](/putting-data-on-the-graph/random-red-dots.gif)
+
+It's definitely something! But it's a bit much and it seems to be lagging as well. Let's see if we can optimize.
+
+I want to show only the dots whose years are also being shown and I want to have different, combinable, data types.
+
+To do this, I first create a state that keeps track of the selected data types.
+
+```tsx
+  const [selectedData] = useState<SelectableDataType[]>([
+    SelectableDataType.ADULTS_KILLED,
+  ]);
+```
+
+Right now, it has AdultsKilled as a default.
+
+Next up, when drawing the data, I give each circle a radius of 0. Since each tick has either 'decade', 'lustrum' or 'regular' in its class, I can easily create a function that changes the radius if the circle has to become visible, like this:
+
+```tsx
+const animateDataType = (timeline: boolean, parent: string, type: string) => {
+    if (timeline) {
+      gsapTimeline?.to(
+        `.tick.${parent} .tick-data.${type}`,
+        {
+          attr: { r: 5 },
+          duration: 0.2,
+          ease: "bounce.out",
+          stagger: 0.01,
+        },
+        "<"
+      );
+    } else {
+      gsap.to(`.tick.${parent} .tick-data.${type}`, {
+        attr: { r: 5 },
+        duration: 0.2,
+        ease: "bounce.out",
+        stagger: 0.01,
+      });
+    }
+  };
+```
+
+Once again, I tried to make it as generic as possible. Once again, it is possible to animate on a timeline or not. Secondly, the parent refers to it either being a decade, lustrum or regular tick. Lastly, the type refers to the data type, like AdultsKilled.
+
+Since my selectedData contains all of the data types I have to show, I can create the following function and run it every time the data types change:
+
+```tsx
+    const animateData = (timeline: boolean, parent: string) => {
+    selectedData.forEach((data) => {
+      animateDataType(timeline, parent, data);
+    });
+  };
+```
+
+![timeline with data](/putting-data-on-the-graph/data-on-zoom.gif)
+The outgoing effect is pretty cool, but I fear that I will have to do something about that later on.
+
+
+But I am still only drawing data for AdultsKilled, so it's time to make `drawData()` more generic as well. 
+
+```tsx
+selectedData.forEach((data) => {
+      console.log(data);
+      groups
+        .append("circle")
+        .attr("id", (d: TimelineYear) => `data-${d.year}`)
+        .attr("cx", 25)
+        .attr(
+          "cy",
+          (d) =>
+            getDimensions().height -
+            PADDING.bottom -
+            ((d[data]?.number ?? Math.random() * 1000) / 1000) * maxHeight
+        )
+        .attr("r", 0)
+        .attr("class", `tick-data unzoom ${data}`);
+    });
+```
+
+Luckily, this wasn't very hard. Just loop over each selected Data Type and draw a circle for each year and add the type to the class.
+
+Lastly, I added css styling and buttons for each data type and added an `onMouseEnter()` and `onMouseLeave()` to easily visualize my project. I will definitely still changes this later on, but the result is very cool!
+
+![timeline with data](/headers/changing-data.gif)

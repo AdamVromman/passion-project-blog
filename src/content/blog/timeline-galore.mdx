@@ -6,7 +6,7 @@ heroImage: "zooming-timeline.gif"
 ---
 
 
-Okay, first things first, I realised, the way I was constructing my TimelineData, was a bit silly, so I am going to refactor that into something a bit more sensible, while also adding all of the years from 1917 to 2025.
+Okay, first things first, I realized, the way I was constructing my TimelineData, was a bit silly, so I am going to refactor that into something a bit more sensible, while also adding all of the years from 1917 to 2025.
 
 ```typescript
 export enum Source {
@@ -317,7 +317,7 @@ const drawTimeline = () => {
   };
 ```
 
-With this new approach, I have much more control over each tick, and for example—somthing I want to implement later—I can have certain years disappear when I zoom out.
+With this new approach, I have much more control over each tick, and for example—something I want to implement later—I can have certain years disappear when I zoom out.
 
 Now I want to be able to zoom as well.
 

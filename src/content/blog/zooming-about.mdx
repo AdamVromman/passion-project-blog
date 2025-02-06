@@ -1,0 +1,214 @@
+---
+title: Zooming about
+description: Let's do a deep dive into zooming and panning a d3.js Timeline.
+pubDate: 2025-01-31
+heroImage: "zooming-about.png"
+---
+
+I'm going to start the day by fixing what I couldn't fix yesterday. I'm guessing the easiest way is to just not have any transform in my gsap animations, since my elements are already being transformed by d3.
+
+![timeline zooming with line-length instead of transform](/zooming-about/line-length-zooming.gif)
+
+```tsx
+ groups
+      .append("line")
+      .attr("x1", 25)
+      .attr("x2", 25)
+      .attr("y1", HEIGHT_TIMELINE / 2 - 16)
+      .attr("y2", HEIGHT_TIMELINE / 2 - 16)
+      .attr("opacity", 0)
+      .attr("stroke-linecap", "round")
+      .attr("class", "stroke-4 stroke-[#C4C0B6] unzoom line mt-[50]");
+```
+
+As you can see in the code above, I set the y2 of the each line to be the same y1, meaning each tick line is just a dot.
+
+```tsx
+const animateTickIn = (className: string, zoomLevel: number) => {
+    gsap.to(`.${className} .line`, {
+      opacity: 1,
+      attr: { y2: HEIGHT_TIMELINE - 8 },
+      duration: 0.4,
+      ease: "power4.out",
+      stagger: 0.05,
+    });
+
+    gsap.to(`.${className} .text`, {
+      opacity: 1,
+      duration: 0.4,
+      ease: "power4.out",
+      stagger: 0.05,
+    });
+  };
+
+  const animateTickOut = (className: string, zoomLevel: number) => {
+    gsap.to(`.${className} .line`, {
+      attr: { y2: HEIGHT_TIMELINE / 2 - 16 },
+      opacity: 0,
+      duration: 0.1,
+      ease: "power4.in",
+    });
+
+    gsap.to(`.${className} .text`, {
+      opacity: 0,
+      duration: 1,
+      ease: "power4.out",
+    });
+  };
+  ```
+
+  Next, I define an function to animate the lines in, in which I replace to y2 of each line and an opposite function to animate the lines out.
+  Although the results is much better already, near the end of the GIF there are still some visual bugs. I suspect what is happening is that some animations take so long that other animations catch up to them.
+
+  But before I fix that, I want to focus on something different. I would like display the two outermost years that are currently visible. For example, when completely zoomed out, it would display "1917 — 2025" and it would update depending on the zoom and translate.
+
+  I realize that there must be a mathematical way to calculate this, but I believe that it will be much easier if I do this based on html.
+
+  I'll start by defining two new states, `leftYear` and `rightYear`, meaning the leftmost visible year and the rightmost visible year.
+
+  ```tsx
+  const [leftYear, setLeftYear] = useState(timeline[0].year);
+  const [rightYear, setRightYear] = useState(
+    timeline[timeline.length - 1].year
+  );
+  ```
+
+  Since the Timeline always starts on zoom level 1, I can set the leftYear to the first year of the timeline and the rightYear to the last year of the timeline.
+
+  Next, I create an `updateYears()`-function and call it in the `handleZoom()`-function, so that it gets called every time the zoom or pan changes.
+
+For the function itself, I'll first need the parent and its left and right bounds, to check which element is still within that parent and which one is not (This can be done more efficiently, since I am calling a `.getElementById()` every tick. I will change this later, when everything works):
+
+```tsx
+const container = document.getElementById("svg-wrapper");
+if (container) {
+      const { left, right } = container.getBoundingClientRect();
+}
+```
+
+Then, all I need to do to get the leftmost year, is to loop my timeline, get the element associated with each year and check if it's left bound is bigger than the parent's left bound. This sounds very costly, but the good thing is, that once found, I can break out of the loop. 
+
+```tsx
+for (let i = 0; i < timeline.length; i++) {
+        const tick = document.getElementById(`tick-${timeline[i].year}`);
+        if (tick) {
+          const tickLeft = tick.getBoundingClientRect().left;
+          if (tickLeft >= left) {
+            setLeftYear(timeline[i + (-1 + zoomLevel)].year);
+            break;
+          }
+        }
+      }
+```
+
+For the right year, I do the same, but starting at the end of my timeline and counting down. The result is the following method:
+
+  ```tsx
+  const updateYears = () => {
+    const container = document.getElementById("svg-wrapper");
+    if (container) {
+      const { left, right } = container.getBoundingClientRect();
+      for (let i = 0; i < timeline.length; i++) {
+        const tick = document.getElementById(`tick-${timeline[i].year}`);
+        if (tick) {
+          const tickLeft = tick.getBoundingClientRect().left;
+          if (tickLeft >= left) {
+            setLeftYear(timeline[i + (-1 + zoomLevel)].year);
+            break;
+          }
+        }
+      }
+      for (let i = timeline.length - 1; i >= 0; i--) {
+        const tick = document.getElementById(`tick-${timeline[i].year}`);
+        if (tick) {
+          const tickRight = tick.getBoundingClientRect().right;
+          if (tickRight <= right) {
+            setRightYear(timeline[i + (1 - zoomLevel)].year);
+            break;
+          }
+        }
+      }
+    }
+  };
+  ```
+
+  This is the result:
+
+  ![timeline zooming with years](/zooming-about/timeline-with-years.gif)
+
+  Next up: The bottom part of my timeline. The top part will be for events and the bottom part will be for graphs. This isn't all too hard, and just involves copying most of the code of the top lines. I also added two big rectangles to each side of my timeline, so that there would be a nice fade-out effect on both sides.
+
+  ---
+
+I want to animate my graph being constructed when the user scrolls down, but I also want to keep the functionality of ticks being animated in and out when zooming.
+
+  I am going to start by making `animateTickIn()` and `animateTickOut()` more generic, so that I can use them for the decade ticks (every 10 years), the lustrum ticks (every 5 years) and the regular ticks (every year). But the problem is that the decade ones get animated along with a GSAP *Timeline* (since it gets animated in the beginning, along with some other things), while the two other types should be animated as standalone GSAP animations.
+
+  ```tsx
+  const animateTickIn = (className: string, tl?: gsap.core.Timeline) => {
+    if (tl) {
+      tl.to(
+        `.${className} .line`,
+        {
+          opacity: 1,
+          attr: { y2: HEIGHT_TIMELINE - 8 },
+          duration: 0.4,
+          ease: "power4.out",
+          stagger: 0.05,
+        },
+        "<"
+      );
+
+      tl.to(
+        `.${className} .line-2`,
+        {
+          opacity: 1,
+          attr: { y2: getDimensions().height - PADDING.bottom - 16 },
+          duration: 0.4,
+          ease: "power4.out",
+          stagger: 0.05,
+        },
+        "<"
+      );
+
+      tl.to(
+        `.${className} .text`,
+        {
+          opacity: 1,
+          duration: 0.4,
+          ease: "power4.out",
+          stagger: 0.05,
+        },
+        "<"
+      );
+    } else {
+      gsap.to(`.${className} .line`, {
+        opacity: 1,
+        attr: { y2: HEIGHT_TIMELINE - 8 },
+        duration: 0.4,
+        ease: "power4.out",
+        stagger: 0.05,
+      });
+      gsap.to(`.${className} .line-2`, {
+        opacity: 1,
+        attr: { y2: getDimensions().height - PADDING.bottom - 16 },
+        duration: 0.4,
+        ease: "power4.out",
+        stagger: 0.05,
+      });
+      gsap.to(`.${className} .text`, {
+        opacity: 1,
+        duration: 0.4,
+        ease: "power4.out",
+        stagger: 0.05,
+      });
+    }
+  };
+  ```
+
+  I ended up fixing this by adding an optional GSAP *Timeline* parameter to the function. If it's given, it animates on the GSAP *Timeline*, if not it animates standalone. For the `animateTickOut()`-function, I don't have that problem, since this function only applies to standalone animations. To animate the ticks out in the GSAP *Timeline*, I simply reverse the *Timeline*.
+
+  ![Timeline with starting animation](/zooming-about/timeline-animation.gif)
+  After implementing the timeline, the results looks like this.
+
+  Next up would be to actual add data to this graph.

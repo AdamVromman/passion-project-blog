@@ -12,7 +12,7 @@ import ThirdGSAPDemo from "../../components/GSAP/ThirdGSAPDemo";
 
 Okay! Finally time to move on to the *actual* animation libraries. First on the line is GSAP, because I am already familiar with it. For all of the libraries, I am going to try and animate the same things, to see how it works and how they hold up when, for example, I want to animate a few thousand points.
 
-For data, we are going to use a 10.000-entry .csv file called organisations.
+For data, we are going to use a 10.000-entry .csv file called organizations.
 
 ```csv
 Index,Organization Id,Name,Website,Country,Description,Founded,Industry,Number of employees
@@ -39,13 +39,13 @@ Index,Organization Id,Name,Website,Country,Description,Founded,Industry,Number o
 [...]
 ```
 
-But let's start with a simple square performing a circular movement. For the sake of exercise, I will try and intergrate D3 into these demo's as well.
+But let's start with a simple square performing a circular movement. For the sake of exercise, I will try and integrate D3 into these demo's as well.
 
 <Demo title="Moving a square" type="GSAP">
 <FirstGSAPDemo client:only="react" />
 </Demo>
 
-(By the way, I added an FPS counter in the meantime. It will help me, and you, to determine wheter things are working all right or not. I didn't write the code for it, but I adjusted it to my needs. The original code can also be found [here](https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html))
+(By the way, I added an FPS counter in the meantime. It will help me, and you, to determine whether things are working all right or not. I didn't write the code for it, but I adjusted it to my needs. The original code can also be found [here](https://www.growingwiththeweb.com/2017/12/fast-simple-js-fps-counter.html))
 
 ```typescript
       const times: number[] = [];
@@ -172,7 +172,7 @@ const SecondGSAPDemo = () => {
 export default SecondGSAPDemo;
 ```
 
-Okay, so I can see that more than a thousand cubes becomes really hard for the browser to handle. We will have to check how it goes with some other tests and then, after that, with the other framesworks.
+Okay, so I can see that more than a thousand cubes becomes really hard for the browser to handle. We will have to check how it goes with some other tests and then, after that, with the other frameworks.
 
 Something else I want to find out it how easily it manipulates text and more complex shapes.
 Here, the performance goes down quite a bit, which might also have something to do with the amount of demos running on the same page. To counter this, the next thing I am going to do is to write a system that pauses a test if another one is playing.

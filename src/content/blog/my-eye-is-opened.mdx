@@ -12,17 +12,17 @@ import DemoEye3 from '../../components/Topic/DemoEye3.tsx';
 
 I was just on the train to Kortrijk, and in the 4 years of Devine that has always been where I had the best ideas. I can just sit still for 30 minutes, looking out the window and something will reveal itself to me.
 
-In a flash, I saw the whole website in front of me. I was avoiding thinking of it as a dashboard, because I though that would force me to use more traditional data visualisation, but as i was staring out of the window, I realised that I could do a sort of dashboard but have the visualisation be a combination of all the ideas that I had.
+In a flash, I saw the whole website in front of me. I was avoiding thinking of it as a dashboard, because I though that would force me to use more traditional data visualization, but as i was staring out of the window, I realized that I could do a sort of dashboard but have the visualization be a combination of all the ideas that I had.
 
 ![drawing of my website](/my-eye-is-opened/drawing.webp)
 The idea is that the header is an eye that shows different statistics for a single day. If people died, were wounded, etc.
 
-Under that I would do a timeline of the whole history between Israel and Palestina, starting in 1917. Visitors would be able to drag certain icon's on the timeline to see how these things evolved over time.
+Under that I would do a timeline of the whole history between Israel and Palestine, starting in 1917. Visitors would be able to drag certain icon's on the timeline to see how these things evolved over time.
 
 Lastly, the rest of the website would be filled with the *Keffiyeh* pattern, made up of data, somehow. That part is still the most vague.
-All this would also allow me to use certain techonologies with certain parts of the website.
+All this would also allow me to use certain technologies with certain parts of the website.
 
-Okay, so I start out by getting the relevant data from [this source](https://data.techforpalestine.org/docs/casualties-daily/), who's source is the ministry of health of Palestina. I fetch the url and if the site returns a *200 OK status*, I save the data in a *React State*.
+Okay, so I start out by getting the relevant data from [this source](https://data.techforpalestine.org/docs/casualties-daily/), who's source is the ministry of health of Palestine. I fetch the url and if the site returns a *200 OK status*, I save the data in a *React State*.
 
 ```tsx
 const [data, setData] = useState<any[] | null>(null);
@@ -123,7 +123,7 @@ Okay, This is a good start. To not lose this code if I end up changing a lot, I 
 <DemoEye2 client:only="react" />
 </Demo>
 
-In the second demo, I tried to aggragate data each week, because I thought this would make it more clear and it would make the data a bit more reliable. But it ends up being quite heavy for the browser, since there are weeks where the number of people killed exceeds 1500 people, wich translates to 1500 moving elements on the screen. I am therefor thinking of going back to daily data, which also spares me a lot of date calculations.
+In the second demo, I tried to aggregate data each week, because I thought this would make it more clear and it would make the data a bit more reliable. But it ends up being quite heavy for the browser, since there are weeks where the number of people killed exceeds 1500 people, which translates to 1500 moving elements on the screen. I am therefor thinking of going back to daily data, which also spares me a lot of date calculations.
 
 <Demo title='Eye test per day' type='GSAP'>
 <DemoEye3 client:only="react" />
@@ -203,5 +203,5 @@ const getData = async (day: Date) => {
 ```
 If I want to know how many press was killed on a certain day, I take the total amount of press killed up until that day and subtract the total amount on the previous day. This seems to have a mayor flaw, where the reporting is not always consistent, with some statistics being updated only every few days.
 
-The reporting does include a field that is just `.killed` which is how many people were killed on a certain day and what I used in the first demo. The problem with this is that is does not distinguish between age, gender or professions, like medics or press. I implemented my function to have a more diverse visualisation, but I fear that the quality of the data is too low now.
+The reporting does include a field that is just `.killed` which is how many people were killed on a certain day and what I used in the first demo. The problem with this is that is does not distinguish between age, gender or professions, like medics or press. I implemented my function to have a more diverse visualization, but I fear that the quality of the data is too low now.
 If I switch back to `.killed` and `.injured`, I can maybe combine that with other datasets to get the variety I am looking for.
