@@ -1,0 +1,137 @@
+---
+title: Dealing with data uncertainty
+description: I am addressing the issue of having incomplete or uncertain data in an elegant way.
+pubDate: 2025-02-04
+heroImage: "framer-motion.gif"
+---
+
+As I mentioned before, one of the issues I was having was that a lot of the data is —intentionally— vague, disputed or incomplete. Today, I am going to try to do find a solution for it. My idea is to implement periods for data. For example, it might be impossible to say how many adults were killed in Palestine each separate year of the british mandate (1917 - 1947), but it is definitely more possible to give a number on that period on a whole.
+
+So I started by defining a new interface called `DataPeriod`, and a map to hold all of them:
+
+```typescript
+
+export enum SelectableDataType {
+  ADULTS_KILLED = "adultsKilled",
+  ADULTS_IMPRISONED = "adultsImprisoned",
+  MINORS_KILLED = "minorsKilled",
+  MINORS_IMPRISONED = "minorsImprisoned",
+  ADULTS_INJURED = "adultsInjured",
+  MINORS_INJURED = "minorsInjured",
+  ILLEGAL_SETTLERS = "illegalSettlers",
+  BUILDINGS_DEMOLISHED = "buildingsDemolished",
+  PALESTINIANS_DISPLACED = "palestiniansDisplaced",
+  PERCENTAGE_OF_PALESTINIAN_LAND_STOLEN = "percentageOfPalestinianLandStolen",
+}
+
+
+export interface DataPeriod {
+  startYear: number;
+  endYear: number;
+  amount: dataNumber;
+}
+
+export const periods = new Map<SelectableDataType, DataPeriod[]>([]);
+```
+
+So the way it works is that they key of the map is a SelectableDataType and the value is an array of DataPeriods. This is an array since there might be multiple periods for the same data type. For example, the amount of adults killed during the british mandate and the amount of adults killed during the Nakba (1947 - 1948).
+
+```tsx
+(localSelectedData ?? selectedData).forEach((data) => {
+      const localPeriods = periods.get(data);
+      if (localPeriods) {
+        localPeriods.forEach((period: DataPeriod) => {
+          const periodHeight =
+            getDimensions().height -
+            PADDING.bottom -
+            16 -
+            (period.amount.number /
+              (period.endYear - period.startYear) /
+              getMaxValues(localSelectedData).get(data)) *
+              maxHeight;
+
+          d3.select(graphRef.current)
+            .select("#group-timeline")
+            .select(`#tick-${period.startYear}`)
+            .append("circle")
+            .attr("id", `test-data-${period.startYear}`)
+            .attr("cx", 25)
+            .attr("cy", periodHeight)
+            .attr("r", 0)
+            .attr("class", `tick-data unzoom ${data}`);
+          d3.select(graphRef.current)
+            .select("#group-timeline")
+            .select(`#tick-${period.startYear}`)
+            .append("line")
+            .attr("id", `test-data-${period.startYear}-line`)
+            .attr("x1", 25 + 16)
+            .attr(
+              "x2",
+              d3.select(`#tick-${period.endYear}`).attr("x") -
+                d3.select(`#tick-${period.startYear}`).attr("x")
+            )
+            .attr("y1", periodHeight)
+            .attr("y2", periodHeight)
+            .attr("class", `tick-data period unzoom ${data}`);
+          d3.select(graphRef.current)
+            .select("#group-timeline")
+            .select(`#tick-${period.endYear}`)
+            .append("circle")
+            .attr("id", `test-data-${period.endYear}`)
+            .attr("cx", 25)
+            .attr("cy", periodHeight)
+            .attr("r", 0)
+            .attr("class", `tick-data unzoom ${data}`);
+        });
+      }
+
+      // [...]
+
+    });
+```
+
+Next, I change my `drawData()`-function to also draw two circles and a line in between for each period. For the height, I use the total amount divided by the amount of years. Right now, the `getMaxValues()`-function is not taking these values into account, which is something I plan to fix in the future. But I want to overhaul that whole function anyway (so that it works with max value visible on screen, instead of a static max value), so I will leave it for now.
+
+The next problem was what to do on zoom. The singular data-points elegantly zoom in and out because of the scaling, but the line is still a problem.
+
+I start by creating an `updatePeriods()`-function that I can call on each zoom or pan:
+
+
+```tsx
+  const updatePeriods = (zoom: number) => {
+    selectedData.forEach((data) => {
+      const localPeriods = periods.get(data);
+      if (localPeriods) {
+        d3.select(graphRef.current)
+          .select("#group-timeline")
+          .selectAll<Element, DataPeriod>("line.period-line")
+          .attr(
+            "x1",
+            (d) =>
+              (timeline.findIndex((i) => i.year === d.startYear) *
+                getTickWidth() +
+                PADDING.left) *
+                zoom +
+              PATH_PADDING +
+              TICK_OFFSET -
+              DATA_POINT_SIZE_PERIOD
+          )
+          .attr(
+            "x2",
+            (d) =>
+              (timeline.findIndex((i) => i.year === d.endYear) *
+                getTickWidth() +
+                PADDING.left) *
+                zoom +
+              TICK_OFFSET -
+              PATH_PADDING +
+              DATA_POINT_SIZE_PERIOD
+          );
+      }
+    });
+  };
+```
+
+The only thing it does, is change the x1 and x2 to coincide with the new positions of the ticks.
+
+For the rest of the day, I filled in more data, now with the added power of being able to define periods.
