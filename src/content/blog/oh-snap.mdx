@@ -1,0 +1,376 @@
+---
+title: Oh Snap
+description: Today I implement something that I have wanted to do for a while.
+pubDate: 2025-02-05
+heroImage: "snapping.gif"
+---
+
+import Source from '../../components/Source.astro'
+
+One of the things, that I knew from the start, I would want to do, is have the data types be draggable buttons that snapped into place. I know that GSAP has a library for dragging things, so that's where I am going to start.
+
+At the same time, I want to make a huge change to the way the data is displayed. Right now, if a user selects all of the data types, they are all displayed on the same graph, with their respective heights that have no correlation. I want to make two changes:
+
+1. I want to split up the data types in two groups. In one group I put all the data which can be logically compared: Adults killed, adults injured, adults imprisoned, minors killed, minors injured and minors imprisoned. In the other group I put the data that can not really be put on the same axis: Buildings demolished, Palestinians displaced, percentage of Palestinian land stolen and illegal settlers.
+
+2. I want for each of these groups to share their heights, so that if for example adultsKilled and minorsImprisoned are selected, their heights are relative to the same maximum, and their values can be compared.
+
+I call these two groups "left data" and "right data", since they will be represented by a left-aligned y-axis and a right-aligned y-axis.
+
+First, I import the right libraries: 
+
+```tsx
+import { Draggable } from "gsap/Draggable";
+import { InertiaPlugin } from "@gsap/shockingly/InertiaPlugin";
+```
+
+and I add four new states to keep track of the selected data types and the lengths of these arrays (it will become clear why that is needed).
+
+```tsx
+  const [leftData, setLeftData] = useState<SelectableDataType[]>([]);
+  const [leftLength, setLeftLength] = useState(0);
+  const [rightData, setRightData] = useState<SelectableDataType[]>([]);
+  const [rightLength, setRightLength] = useState(0);
+```
+
+In my `useGSAP()`-hook, where I do the setup for all the GSAP, I add the following:
+
+```tsx
+    gsap.registerPlugin(Draggable);
+    gsap.registerPlugin(InertiaPlugin);
+
+    // get the HTMLElements where left data points can snap to
+    const leftSpots = gsap.utils.toArray<HTMLDivElement>(
+        ".active-row.left .active-row-placeholder"
+      );
+
+    // get the HTMLElements where right data points can snap to
+    const rightSpots = gsap.utils.toArray<HTMLDivElement>(
+        ".active-row.right .active-row-placeholder"
+      );
+
+      // get all the buttons that need to be draggable
+      gsap.utils.toArray<HTMLButtonElement>(".data-icon").map((icon) => {
+
+        //check if they belong to the left or right group
+        const left = icon.classList.contains("left");
+
+        // get their initial position
+        const { x: iconX, y: iconY } = icon.getBoundingClientRect();
+
+        // make them draggable
+        Draggable.create(icon, {
+            //over the x and y axis
+          type: "x,y",
+          inertia: true,
+          edgeResistance: 0.5,
+          // not outside the parent
+          bounds: "#data-icon-bounds",
+          // snap to either the starting point (if the drag amount is less than 100px) or the placeholder from earlier
+          snap: {
+            points: (point) => {
+              if (point.x < 100 && point.y < 100) {
+                if (left) {
+                    // remove that data point from the array of selected data points
+                  setLeftData((prev) => {
+                    const newData = [...prev].filter(
+                      (d) => d !== icon.classList[1]
+                    );
+                    return newData;
+                  });
+                } else {
+                    // remove that data point from the array of selected data points
+                  setRightData((prev) => {
+                    const newData = [...prev].filter(
+                      (d) => d !== icon.classList[1]
+                    );
+                    return newData;
+                  });
+                }
+                // snap to the initial spot
+                return { x: 0, y: 0 };
+              }
+              if (left) {
+                // add that data point to the array of selected data points
+                setLeftData((prev) => {
+                  const newData = [...prev];
+                  newData.push(icon.classList[1] as SelectableDataType);
+                  return newData;
+                });
+              } else {
+                // add that data point to the array of selected data points
+                setRightData((prev) => {
+                  const newData = [...prev];
+                  newData.push(icon.classList[1] as SelectableDataType);
+                  return newData;
+                });
+              }
+
+              const { x: spotX, y: spotY } = (left ? leftSpots : rightSpots)[
+                left ? leftLength : rightLength
+              ].getBoundingClientRect();
+              // snap to the placeholder spot
+              return { x: spotX - iconX, y: spotY - iconY };
+            },
+          },
+        });
+      });
+
+```
+
+This code is all very impressive, but unfortunately, this doesn't work..
+
+![buttons snapping to the same place](/oh-snap/snapping-not-working.gif)
+
+The problem has to do with the way that Javascript works and with this line in particular:
+
+```tsx
+const { x: spotX, y: spotY } = (left ? leftSpots : rightSpots)[
+                left ? leftLength : rightLength
+              ].getBoundingClientRect();
+```
+
+What is happening in this line is that I am getting the x and y of the placeholder spot the button is supposed to snap to, by
+
+1. getting either the array of leftSpots or rightSpots
+2. getting the spot at the index of either the length of the leftData or rightData array.
+3. getting the x and y of that spot.
+
+So in theory, if you drag your first button, that index of that array is 0 and so it goes to the first placeholder spot. If you then drag a second button, the index should be 1 and the second placeholder spot is picked. Where it goes wrong is that `leftLength` and `rightLenght` are always 0, just the same as calling `leftData.length`.
+
+According to the internet <Source year="2022" name='Martinez' link='https://stackoverflow.com/questions/72956844/why-is-react-state-not-updated-inside-functions' APA="Why is React state not updated inside functions? (n.d.). Stack Overflow. https://stackoverflow.com/questions/72956844/why-is-react-state-not-updated-inside-functions"/>, the problem is that even if you are calling the `snap: {points: (point) => {}}`-function whenever you let go of a button, since you have declared it earlier, it will always take the value on declaration. Their solution is to use `useEffect()`'s, which we can not do right now, because of the way that Draggable works. We'll have to find a different solution.
+
+I'm going to try and fix it by assigning each button a specific spot to snap to. That way I don't have to make all of these calculations.
+
+```tsx
+const [leftData, setLeftData] = useState<LeftData>({
+    adultsKilled: false,
+    adultsImprisoned: false,
+    minorsKilled: false,
+    minorsImprisoned: false,
+    adultsInjured: false,
+    minorsInjured: false,
+  });
+
+  const [rightData, setRightData] = useState<RightData>({
+    illegalSettlers: false,
+    buildingsDemolished: false,
+    palestiniansDisplaced: false,
+    percentageOfPalestinianLandStolen: false,
+  });
+```
+
+`leftData` and `rightData` don't have to be arrays anymore and can now be safely-typed objects.
+
+The snapping function is now simplified to this:
+
+```tsx
+Object.keys(leftData).forEach((key) => {
+        const icon = document.getElementById(`timeline-data-icon-${key}`);
+        const placeholder = document.getElementById(
+          `active-row-placeholder-${key}`
+        );
+
+        if (icon && placeholder) {
+          const { x: iconX, y: iconY } = icon.getBoundingClientRect();
+          const { x: spotX, y: spotY } = placeholder.getBoundingClientRect();
+
+          Draggable.create(icon, {
+            inertia: true,
+            type: "x,y",
+            resistance: 0.5,
+            edgeResistance: 0.5,
+            bounds: "#data-icon-bounds",
+            onDragStart: () => {
+              gsap.to(icon, { scale: 0.7, borderRadius: "100%" });
+            },
+            onDragEnd: () => {
+              gsap.to(icon, { scale: 1, borderRadius: "7.5px" });
+            },
+            snap: {
+              points: (point) => {
+                if (point.x < SNAP_DISTANCE && point.y < SNAP_DISTANCE) {
+                  setLeftData((prev) => {
+                    const newData = { ...prev };
+                    newData[key as keyof LeftData] = false;
+                    return newData;
+                  });
+
+                  return { x: 0, y: 0 };
+                }
+
+                setLeftData((prev) => {
+                  const newData = { ...prev };
+                  newData[key as keyof LeftData] = true;
+                  return newData;
+                });
+                return { x: spotX - iconX, y: spotY - iconY };
+              },
+            },
+          });
+        }
+      });
+
+```
+
+The final result is much more as I want it to be:
+
+![buttons snapping to the right place](/oh-snap/snapping-working.gif)
+
+---
+
+Next up, I want the relative heights to be dynamic and I want to generate some y-axis.
+
+For the relative heights, I just update my `getMaxValues()`-function to only take into account one side and only the data points that are visible.
+
+```tsx
+  const getMaxValueOnScreen = (side: Side): number => {
+    let maxValue = 0;
+    const container = document?.getElementById("svg-wrapper");
+
+    if (container) {
+      const { left, right } = container.getBoundingClientRect();
+
+      const visibleTicks = timeline.filter((tick) => {
+        const element = document?.getElementById(`tick-${tick.year}`);
+        if (element) {
+          const { left: tickLeft, right: tickRight } =
+            element.getBoundingClientRect();
+          return tickLeft >= left && tickRight <= right;
+        }
+      });
+
+      getActiveData(side).forEach((entry) => {
+        const max =
+          d3.max(visibleTicks, (d) => {
+            let value = 0;
+            const yearData = d[entry as keyof TimelineYear];
+            if (typeof yearData === "object") {
+              value = yearData.number;
+            }
+            return value;
+          }) ?? 0;
+
+        maxValue = Math.max(maxValue, max);
+      });
+
+      const digits = Math.floor(Math.log10(maxValue) + 1);
+      const powerNumber = Math.max(Math.pow(10, digits - 2), 1);
+      const ceiled = Math.ceil(maxValue / powerNumber) * powerNumber;
+
+      return ceiled;
+    }
+    return 0;
+  };
+```
+
+For the axis themselves, I need a function that updates values every zoom/pan/data change:
+
+
+```tsx
+ const updateYAxis = (side: Side) => {
+    if (
+      (side === Side.LEFT && getActiveData(side).length > 0) ||
+      (side === Side.RIGHT && getActiveData(side).length > 0)
+    ) {
+      const graphStart = PADDING.top + HEIGHT_TIMELINE;
+      const graphEnd = getDimensions().height - PADDING.bottom - PATH_PADDING;
+      const nrOfTicks = Math.floor((graphEnd - graphStart) / 50);
+      const maxValue = getMaxValueOnScreen(side);
+
+      d3.select(graphRef.current).selectAll(`.y-axis.${side}`).remove();
+
+      const y = d3
+        .scaleLinear()
+        .domain([0, maxValue])
+        .range([graphEnd, graphStart]);
+
+      const yArray = [];
+
+      for (let i = 0; i <= nrOfTicks; i++) {
+        yArray.push((maxValue / nrOfTicks) * i);
+      }
+
+      d3.select(graphRef.current)
+        .append("g")
+        .attr("class", `y-axis ${side}`)
+        .selectAll<Element, number>("text.y-axis")
+        .data(yArray)
+        .enter()
+        .append("text")
+        .attr("class", "y-axis")
+        .text((d) => d)
+        .attr("text-anchor", side === Side.LEFT ? "end" : "start")
+        .attr(
+          "x",
+          side === Side.LEFT
+            ? PADDING.left - PATH_PADDING
+            : getDimensions().width - PADDING.right + PATH_PADDING
+        )
+        .attr("y", (d) => y(d));
+    }
+  };
+  ```
+
+  I get to use my D3.js knowledge here to create a scale to transforms the data to y-axis values.
+  And lastly, I need to update the heights of the data points on each zoom/pan/data change:
+
+  ```tsx
+  const updateHeights = (side: Side) => {
+    const maxHeight =
+      getDimensions().height - HEIGHT_TIMELINE - PADDING.bottom - 32;
+
+    getActiveData(side).forEach((data) => {
+      getVisibleYears()
+        .filter((d) => typeof d[data]?.number !== "undefined")
+        .forEach((d) => {
+          gsap.to(`#tick-${d.year} .tick-data.${data}.${side}`, {
+            attr: {
+              cy:
+                getDimensions().height -
+                PADDING.bottom -
+                PATH_PADDING -
+                ((d[data]?.number ?? 0) / getMaxValueOnScreen(side)) *
+                  maxHeight,
+            },
+            duration: 0.6,
+          });
+        });
+
+      periods.get(data)?.forEach((period) => {
+        const value =
+          getDimensions().height -
+          PADDING.bottom -
+          PATH_PADDING -
+          (period.amount.number /
+            (period.endYear - period.startYear + 1) /
+            getMaxValueOnScreen(side)) *
+            maxHeight;
+        gsap.to(
+          `#tick-${period.startYear} .tick-data.${data}.${side}, #tick-${period.endYear} .tick-data.${data}.${side}`,
+          {
+            attr: {
+              cy: value,
+            },
+            duration: 0.6,
+          }
+        );
+
+        gsap.to(`.period-line.line-${period.startYear}.${data}.${side}`, {
+          attr: {
+            y1: value,
+            y2: value,
+          },
+          duration: 0.6,
+        });
+      });
+    });
+  };
+  ```
+
+   At first I wanted to do this with D3, but after some trying I realized that GSAP gave a much smoother result.
+   The results made me really really happy.
+
+    ![y-axis and data points updating](/oh-snap/y-axis-and-datapoints.gif)
+
+
