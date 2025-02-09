@@ -1,0 +1,77 @@
+---
+title: Eventful day
+description: Today I implemented Events and worked on my presentation.
+pubDate: 2025-02-06
+heroImage: "eventful.webp"
+---
+
+Okay, today is an important day. I want to implement events on my timeline and I want to send my coach a test version of my jury presentation.
+
+Let's start with events.
+
+I'll start, where I always start, by creating a function:
+
+```tsx
+
+const drawEvents = () => {}
+```
+
+I'll need D3.js to draw the svg's and rects and I'll also need an update function to handle zooming.
+
+The hard thing is to figure out the x and the width of the each event. I would like to incorporate the months as well, so that if you zoom in, you can see when exactly the event started.
+
+```tsx
+  const drawEvents = () => {
+    d3.select(graphRef.current)
+      .select("#group-timeline")
+      .selectAll("svg.event")
+      .data(events)
+      .enter()
+      .append("svg")
+      .attr("class", "event")
+      .attr(
+        "x",
+        (d) =>
+          PADDING.left +
+          (d.date.getFullYear() - timeline[0].year) * getTickWidth()
+      )
+      .attr("y", 0)
+      .append("rect")
+      .attr("class", "event-rect unzoom")
+      .attr("y", HEIGHT_TIMELINE / 2 + PATH_PADDING)
+      .attr(
+        "x",
+        (d) => 25 + ((d.date.getMonth() * getTickWidth()) / 12) * zoomLevel
+      )
+      .attr("height", getTickWidth())
+      .attr("width", (d) => {
+        return (
+          (d.endDate.getFullYear() - d.date.getFullYear()) *
+            getTickWidth() *
+            zoomLevel -
+          ((d.date.getMonth() * getTickWidth()) / 12) * zoomLevel +
+          ((d.endDate.getMonth() * getTickWidth()) / 12) * zoomLevel
+        );
+      })
+      .attr("rx", getTickWidth() / 2);
+  };
+```
+One thing I am going to add is the support for events with a single date, and to give events were both dates in in the same year, the minimum width.
+
+```tsx
+  const getEventWidth = (d: DataEvent) => {
+    if (d.endDate && d.endDate.getFullYear() !== d.date.getFullYear()) {
+      return (
+        (d.endDate.getFullYear() - d.date.getFullYear()) *
+          getActualTickWidth() -
+        (d.date.getMonth() * getActualTickWidth()) / 12 +
+        (d.endDate.getMonth() * getActualTickWidth()) / 12
+      );
+    } else {
+      return EVENT_MIN_WIDTH;
+    }
+  };
+```
+
+The rest of the day, I worked on the presentation for the jury, next week.
+
