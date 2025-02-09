@@ -1,0 +1,24 @@
+---
+title: Deadline Day
+description: Catching up with my blog posts after finishing the deadline.
+pubDate: 2025-02-09
+heroImage: "deadline.gif"
+---
+
+
+Oookay, so I had to skip a few days of blogging. Not completely unexpected. In the days leading up to the deadline of today, I had to put all my efforts in my products, and I had to neglect this blog a bit. But I am really happy with how the result turned out and I can now describe my findings.
+
+So, as a way of answering my question, I will say that, I was able to use web-based frameworks to help visualize data in a meaningful way. Using a combination of D3.js, React and GSAP, I created an eye that represents the daily casualties in Gaza and the West Bank and the timeline to show the data with more context.
+
+During my testing I found out that:
+
+- D3.js is a huge library with a lot of possibilities. It is absolutely worth it to invest time in learning it.
+- GSAP worked well with D3.js.
+- Motion did not work well with D3.js.
+- Both frameworks were useful in the animation of data, but had limitations when it came to performance.
+
+Which brings me to my final point. Since GSAP and Motion work by updating DOM elements, they are not the most performant way to animate pixels on a screen. It is definitely very useful in the right circumstances, like my project, but if you want to visualize large amounts of data, it might be necessary to look at other solutions, like WebGL, or ThreeJS.
+
+I hope I still get to update both this blog and the final product after my jury presentation.
+
+Thank you for reading!
